@@ -1,0 +1,199 @@
+import 'dart:ui';
+import 'package:flutter/material.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_typography.dart';
+
+class FloatingAppNavigation extends StatefulWidget {
+  final int selectedIndex;
+  final ValueChanged<int> onTabSelected;
+
+  const FloatingAppNavigation({
+    super.key,
+    required this.selectedIndex,
+    required this.onTabSelected,
+  });
+
+  @override
+  State<FloatingAppNavigation> createState() => _FloatingAppNavigationState();
+}
+
+class _FloatingAppNavigationState extends State<FloatingAppNavigation> {
+  final List<_NavItemData> _items = [
+    const _NavItemData(
+      label: 'Home',
+      activeIcon: Icons.home,
+      inactiveIcon: Icons.home_outlined,
+      semanticLabel: 'Home Tab',
+    ),
+    const _NavItemData(
+      label: 'Search',
+      activeIcon: Icons.search,
+      inactiveIcon: Icons.search_outlined,
+      semanticLabel: 'Search Tab',
+    ),
+    const _NavItemData(
+      label: 'Create',
+      activeIcon: Icons.add_circle,
+      inactiveIcon: Icons.add_circle_outline_rounded,
+      semanticLabel: 'Create Post Tab',
+    ),
+    const _NavItemData(
+      label: 'Matches',
+      activeIcon: Icons.favorite,
+      inactiveIcon: Icons.favorite_border_rounded,
+      semanticLabel: 'Likes and Matches Tab',
+    ),
+    const _NavItemData(
+      label: 'Broadcast',
+      activeIcon: Icons.sensors,
+      inactiveIcon: Icons.sensors_outlined,
+      semanticLabel: 'Live Broadcast Tab',
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final navBg = isDark
+        ? const Color(0xFF101010).withOpacity(0.96)
+        : Colors.white.withOpacity(0.95);
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.08)
+        : Colors.black.withOpacity(0.08);
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(32),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        child: Container(
+          height: 90,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: navBg,
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(color: borderColor, width: 1.2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(isDark ? 0.4 : 0.06),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: List.generate(_items.length, (index) {
+              final item = _items[index];
+              final isSelected = widget.selectedIndex == index;
+
+              return Expanded(
+                child: _NavigationItemTile(
+                  item: item,
+                  isSelected: isSelected,
+                  isDark: isDark,
+                  onTap: () => widget.onTabSelected(index),
+                ),
+              );
+            }),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavItemData {
+  final String label;
+  final IconData activeIcon;
+  final IconData inactiveIcon;
+  final String semanticLabel;
+
+  const _NavItemData({
+    required this.label,
+    required this.activeIcon,
+    required this.inactiveIcon,
+    required this.semanticLabel,
+  });
+}
+
+class _NavigationItemTile extends StatelessWidget {
+  final _NavItemData item;
+  final bool isSelected;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _NavigationItemTile({
+    required this.item,
+    required this.isSelected,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Colors based on theme & selection state
+    final selectedTileBg = isDark
+        ? Colors.white.withOpacity(0.08)
+        : Colors.black.withOpacity(0.05);
+    final activeIconColor = isDark
+        ? AppColors.darkPrimaryText
+        : AppColors.lightPrimaryText;
+    final inactiveIconColor = isDark
+        ? AppColors.darkMutedText
+        : AppColors.lightMutedText;
+
+    return Semantics(
+      label: item.semanticLabel,
+      selected: isSelected,
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Center(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOutCubic,
+            width: isSelected ? 64 : 50,
+            height: isSelected ? 70 : 50,
+            decoration: BoxDecoration(
+              color: isSelected ? selectedTileBg : Colors.transparent,
+              borderRadius: BorderRadius.circular(22),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  isSelected ? item.activeIcon : item.inactiveIcon,
+                  color: isSelected ? activeIconColor : inactiveIconColor,
+                  size: isSelected ? 25 : 28,
+                ),
+                if (isSelected) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    item.label,
+                    style: AppTypography.getNavigationLabel(
+                      activeIconColor,
+                    ).copyWith(fontSize: 13),
+                    maxLines: 1,
+                  ),
+                  const SizedBox(height: 4),
+                  // Small Neon Lime Status Dot
+                  Container(
+                    width: 4,
+                    height: 4,
+                    decoration: const BoxDecoration(
+                      color: AppColors.neonLime,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
