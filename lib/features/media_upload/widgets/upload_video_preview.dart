@@ -15,9 +15,10 @@ class VideoPlayerControllerFactory {
   }
 }
 
-final videoPlayerControllerFactoryProvider = Provider<VideoPlayerControllerFactory>(
-  (ref) => const VideoPlayerControllerFactory(),
-);
+final videoPlayerControllerFactoryProvider =
+    Provider<VideoPlayerControllerFactory>(
+      (ref) => const VideoPlayerControllerFactory(),
+    );
 
 enum PlaybackState { initializing, ready, playing, paused, completed, failed }
 
@@ -77,7 +78,8 @@ class _UploadVideoPreviewState extends ConsumerState<UploadVideoPreview> {
       });
     }
 
-    final isNetwork = widget.videoPathOrUrl.startsWith('http://') ||
+    final isNetwork =
+        widget.videoPathOrUrl.startsWith('http://') ||
         widget.videoPathOrUrl.startsWith('https://');
 
     final factory = ref.read(videoPlayerControllerFactoryProvider);
@@ -157,9 +159,10 @@ class _UploadVideoPreviewState extends ConsumerState<UploadVideoPreview> {
   void _handleError(String description) {
     if (!mounted) return;
 
-    final isNetwork = widget.videoPathOrUrl.startsWith('http://') ||
+    final isNetwork =
+        widget.videoPathOrUrl.startsWith('http://') ||
         widget.videoPathOrUrl.startsWith('https://');
-    
+
     String sanitizedPath = widget.videoPathOrUrl;
     if (isNetwork) {
       try {
@@ -232,10 +235,7 @@ class _UploadVideoPreviewState extends ConsumerState<UploadVideoPreview> {
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: 9 / 16,
-      child: Container(
-        color: const Color(0xFF121216),
-        child: _buildContent(),
-      ),
+      child: Container(color: const Color(0xFF121216), child: _buildContent()),
     );
   }
 
@@ -285,20 +285,15 @@ class _UploadVideoPreviewState extends ConsumerState<UploadVideoPreview> {
 
   Widget _buildThumbnailOrPlaceholder() {
     if (widget.thumbnailPath != null) {
-      final isNetwork = widget.thumbnailPath!.startsWith('http://') ||
+      final isNetwork =
+          widget.thumbnailPath!.startsWith('http://') ||
           widget.thumbnailPath!.startsWith('https://');
       if (isNetwork) {
-        return Image.network(
-          widget.thumbnailPath!,
-          fit: BoxFit.cover,
-        );
+        return Image.network(widget.thumbnailPath!, fit: BoxFit.cover);
       } else {
         final file = File(widget.thumbnailPath!);
         if (file.existsSync()) {
-          return Image.file(
-            file,
-            fit: BoxFit.cover,
-          );
+          return Image.file(file, fit: BoxFit.cover);
         }
       }
     }
@@ -321,11 +316,7 @@ class _UploadVideoPreviewState extends ConsumerState<UploadVideoPreview> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.error_outline,
-            color: Colors.redAccent,
-            size: 28,
-          ),
+          const Icon(Icons.error_outline, color: Colors.redAccent, size: 28),
           const SizedBox(height: 6),
           const Text(
             'Unable to play this video',
@@ -343,7 +334,10 @@ class _UploadVideoPreviewState extends ConsumerState<UploadVideoPreview> {
               InkWell(
                 onTap: _initializePlayer,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white24,
                     borderRadius: BorderRadius.circular(4),
@@ -359,7 +353,10 @@ class _UploadVideoPreviewState extends ConsumerState<UploadVideoPreview> {
                 InkWell(
                   onTap: widget.onReplace,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFD2FF27).withOpacity(0.2),
                       borderRadius: BorderRadius.circular(4),
@@ -379,7 +376,8 @@ class _UploadVideoPreviewState extends ConsumerState<UploadVideoPreview> {
   }
 
   Widget _buildOverlayControls() {
-    final showPlayIcon = _state == PlaybackState.paused || _state == PlaybackState.ready;
+    final showPlayIcon =
+        _state == PlaybackState.paused || _state == PlaybackState.ready;
     final showReplayIcon = _state == PlaybackState.completed;
     final showPauseIcon = _state == PlaybackState.playing;
 

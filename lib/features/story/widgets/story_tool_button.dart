@@ -36,9 +36,7 @@ class StoryToolButton extends StatelessWidget {
                   ? const Color(0xFF18191D)
                   : Colors.black.withOpacity(0.55),
               border: Border.all(
-                color: isActive
-                    ? activeColor
-                    : Colors.white.withOpacity(0.12),
+                color: isActive ? activeColor : Colors.white.withOpacity(0.12),
                 width: isActive ? 2.0 : 1.0,
               ),
               boxShadow: isActive
@@ -47,7 +45,7 @@ class StoryToolButton extends StatelessWidget {
                         color: activeColor.withOpacity(0.25),
                         blurRadius: 8,
                         spreadRadius: 1,
-                      )
+                      ),
                     ]
                   : null,
             ),

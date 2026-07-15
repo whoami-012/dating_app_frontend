@@ -6,11 +6,13 @@ import '../../../core/theme/app_typography.dart';
 class FloatingAppNavigation extends StatefulWidget {
   final int selectedIndex;
   final ValueChanged<int> onTabSelected;
+  final double height;
 
   const FloatingAppNavigation({
     super.key,
     required this.selectedIndex,
     required this.onTabSelected,
+    this.height = 88.0,
   });
 
   @override
@@ -56,29 +58,25 @@ class _FloatingAppNavigationState extends State<FloatingAppNavigation> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final navBg = isDark
-        ? const Color(0xFF101010).withOpacity(0.96)
-        : Colors.white.withOpacity(0.95);
-    final borderColor = isDark
-        ? Colors.white.withOpacity(0.08)
-        : Colors.black.withOpacity(0.08);
+    final navBg = const Color(0xFF141414).withOpacity(0.95);
+    final borderColor = Colors.white.withOpacity(0.06);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(32),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
         child: Container(
-          height: 90,
+          height: widget.height,
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             color: navBg,
             borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: borderColor, width: 1.2),
+            border: Border.all(color: borderColor, width: 1.0),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(isDark ? 0.4 : 0.06),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -133,16 +131,10 @@ class _NavigationItemTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Colors based on theme & selection state
-    final selectedTileBg = isDark
-        ? Colors.white.withOpacity(0.08)
-        : Colors.black.withOpacity(0.05);
-    final activeIconColor = isDark
-        ? AppColors.darkPrimaryText
-        : AppColors.lightPrimaryText;
+    final activeIconColor = AppColors.neonLime;
     final inactiveIconColor = isDark
-        ? AppColors.darkMutedText
-        : AppColors.lightMutedText;
+        ? AppColors.darkSecondaryText
+        : AppColors.lightSecondaryText;
 
     return Semantics(
       label: item.semanticLabel,
@@ -152,45 +144,34 @@ class _NavigationItemTile extends StatelessWidget {
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
         child: Center(
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeInOutCubic,
-            width: isSelected ? 64 : 50,
-            height: isSelected ? 70 : 50,
-            decoration: BoxDecoration(
-              color: isSelected ? selectedTileBg : Colors.transparent,
-              borderRadius: BorderRadius.circular(22),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  isSelected ? item.activeIcon : item.inactiveIcon,
-                  color: isSelected ? activeIconColor : inactiveIconColor,
-                  size: isSelected ? 25 : 28,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                isSelected ? item.activeIcon : item.inactiveIcon,
+                color: isSelected ? activeIconColor : inactiveIconColor,
+                size: isSelected ? 28 : 28,
+              ),
+              if (isSelected) ...[
+                const SizedBox(height: 4),
+                Text(
+                  item.label,
+                  style: AppTypography.getNavigationLabel(
+                    Colors.white,
+                  ).copyWith(fontSize: 13, fontWeight: FontWeight.w500),
+                  maxLines: 1,
                 ),
-                if (isSelected) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    item.label,
-                    style: AppTypography.getNavigationLabel(
-                      activeIconColor,
-                    ).copyWith(fontSize: 13),
-                    maxLines: 1,
+                const SizedBox(height: 4),
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: const BoxDecoration(
+                    color: AppColors.neonLime,
+                    shape: BoxShape.circle,
                   ),
-                  const SizedBox(height: 4),
-                  // Small Neon Lime Status Dot
-                  Container(
-                    width: 4,
-                    height: 4,
-                    decoration: const BoxDecoration(
-                      color: AppColors.neonLime,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ],
+                ),
               ],
-            ),
+            ],
           ),
         ),
       ),

@@ -33,9 +33,7 @@ class StoryTopBar extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.black.withOpacity(0.4),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.08),
-                  ),
+                  border: Border.all(color: Colors.white.withOpacity(0.08)),
                 ),
                 child: const Icon(
                   Icons.arrow_back,

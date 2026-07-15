@@ -32,8 +32,8 @@ class StoryUploadState {
 
 final storyUploadProvider =
     NotifierProvider<StoryUploadNotifier, StoryUploadState>(
-  StoryUploadNotifier.new,
-);
+      StoryUploadNotifier.new,
+    );
 
 class StoryUploadNotifier extends Notifier<StoryUploadState> {
   @override
@@ -41,7 +41,10 @@ class StoryUploadNotifier extends Notifier<StoryUploadState> {
     return const StoryUploadState();
   }
 
-  Future<bool> uploadStories(List<StoryMediaItem> items, String audience) async {
+  Future<bool> uploadStories(
+    List<StoryMediaItem> items,
+    String audience,
+  ) async {
     if (items.isEmpty) {
       state = state.copyWith(
         status: StoryUploadStatus.failure,
@@ -72,10 +75,7 @@ class StoryUploadNotifier extends Notifier<StoryUploadState> {
         state = state.copyWith(progress: i * 0.1);
       }
 
-      state = state.copyWith(
-        status: StoryUploadStatus.success,
-        progress: 1.0,
-      );
+      state = state.copyWith(status: StoryUploadStatus.success, progress: 1.0);
 
       // Add to home feed stories list
       final newStory = Story(

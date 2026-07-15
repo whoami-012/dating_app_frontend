@@ -83,13 +83,13 @@ class MockVideoPlayerController extends VideoPlayerController {
 
   @override
   VideoPlayerValue get value => VideoPlayerValue(
-        duration: mockDuration,
-        size: const Size(1920, 1080),
-        position: _position,
-        isPlaying: _isPlaying,
-        isInitialized: _isInit,
-        errorDescription: shouldFail ? 'Mock playback error' : null,
-      );
+    duration: mockDuration,
+    size: const Size(1920, 1080),
+    position: _position,
+    isPlaying: _isPlaying,
+    isInitialized: _isInit,
+    errorDescription: shouldFail ? 'Mock playback error' : null,
+  );
 
   @override
   Future<void> initialize() async {
@@ -139,8 +139,7 @@ class MockVideoPlayerController extends VideoPlayerController {
 // ---------------------------------------------------------------------------
 // Mock factory – injected via Riverpod override.
 // ---------------------------------------------------------------------------
-class MockVideoPlayerControllerFactory
-    implements VideoPlayerControllerFactory {
+class MockVideoPlayerControllerFactory implements VideoPlayerControllerFactory {
   final bool shouldFail;
   final Function(MockVideoPlayerController)? onControllerCreated;
   final List<MockVideoPlayerController> createdControllers = [];
@@ -217,11 +216,11 @@ void main() {
     // File.writeAsString) must be wrapped in `tester.runAsync(() async { … })`.
     // pumpWidget / pump / tap must be called *outside* runAsync.
 
-    testWidgets('Controller initialization and lifecycle',
-        (WidgetTester tester) async {
+    testWidgets('Controller initialization and lifecycle', (
+      WidgetTester tester,
+    ) async {
       // Real I/O → runAsync
-      final tempPath =
-          '${Directory.systemTemp.path}/test_video_lifecycle.mp4';
+      final tempPath = '${Directory.systemTemp.path}/test_video_lifecycle.mp4';
       await tester.runAsync(() async {
         await File(tempPath).writeAsString('dummy video data');
       });
@@ -238,9 +237,7 @@ void main() {
             videoPlayerControllerFactoryProvider.overrideWithValue(factory),
           ],
           child: MaterialApp(
-            home: Scaffold(
-              body: UploadVideoPreview(videoPathOrUrl: tempPath),
-            ),
+            home: Scaffold(body: UploadVideoPreview(videoPathOrUrl: tempPath)),
           ),
         ),
       );
@@ -273,12 +270,11 @@ void main() {
       });
     });
 
-    testWidgets('Controller disposed when media changes',
-        (WidgetTester tester) async {
-      final path1 =
-          '${Directory.systemTemp.path}/test_video_change_1.mp4';
-      final path2 =
-          '${Directory.systemTemp.path}/test_video_change_2.mp4';
+    testWidgets('Controller disposed when media changes', (
+      WidgetTester tester,
+    ) async {
+      final path1 = '${Directory.systemTemp.path}/test_video_change_1.mp4';
+      final path2 = '${Directory.systemTemp.path}/test_video_change_2.mp4';
       await tester.runAsync(() async {
         await File(path1).writeAsString('dummy');
         await File(path2).writeAsString('dummy');
@@ -331,8 +327,9 @@ void main() {
       });
     });
 
-    testWidgets('Initialization failure and retry UI',
-        (WidgetTester tester) async {
+    testWidgets('Initialization failure and retry UI', (
+      WidgetTester tester,
+    ) async {
       final path = '${Directory.systemTemp.path}/failed_video.mp4';
       await tester.runAsync(() async {
         await File(path).writeAsString('dummy');
@@ -346,9 +343,7 @@ void main() {
             videoPlayerControllerFactoryProvider.overrideWithValue(factory),
           ],
           child: MaterialApp(
-            home: Scaffold(
-              body: UploadVideoPreview(videoPathOrUrl: path),
-            ),
+            home: Scaffold(body: UploadVideoPreview(videoPathOrUrl: path)),
           ),
         ),
       );
@@ -364,12 +359,11 @@ void main() {
         ProviderScope(
           overrides: [
             videoPlayerControllerFactoryProvider.overrideWithValue(
-                successFactory),
+              successFactory,
+            ),
           ],
           child: MaterialApp(
-            home: Scaffold(
-              body: UploadVideoPreview(videoPathOrUrl: path),
-            ),
+            home: Scaffold(body: UploadVideoPreview(videoPathOrUrl: path)),
           ),
         ),
       );
@@ -386,8 +380,9 @@ void main() {
       });
     });
 
-    testWidgets('Missing/expired local file shows error state',
-        (WidgetTester tester) async {
+    testWidgets('Missing/expired local file shows error state', (
+      WidgetTester tester,
+    ) async {
       final factory = MockVideoPlayerControllerFactory();
 
       await tester.pumpWidget(
@@ -397,9 +392,7 @@ void main() {
           ],
           child: const MaterialApp(
             home: Scaffold(
-              body: UploadVideoPreview(
-                videoPathOrUrl: '/nonexistent/path.mp4',
-              ),
+              body: UploadVideoPreview(videoPathOrUrl: '/nonexistent/path.mp4'),
             ),
           ),
         ),
@@ -410,8 +403,9 @@ void main() {
       expect(find.text('Unable to play this video'), findsOneWidget);
     });
 
-    testWidgets('Preview does not overflow at 320 px width',
-        (WidgetTester tester) async {
+    testWidgets('Preview does not overflow at 320 px width', (
+      WidgetTester tester,
+    ) async {
       final path = '${Directory.systemTemp.path}/overflow_video.mp4';
       await tester.runAsync(() async {
         await File(path).writeAsString('dummy');
@@ -451,8 +445,9 @@ void main() {
       });
     });
 
-    testWidgets('No duplicate controller creation after parent rebuild',
-        (WidgetTester tester) async {
+    testWidgets('No duplicate controller creation after parent rebuild', (
+      WidgetTester tester,
+    ) async {
       final path = '${Directory.systemTemp.path}/rebuild_video.mp4';
       await tester.runAsync(() async {
         await File(path).writeAsString('dummy');

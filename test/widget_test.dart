@@ -33,9 +33,7 @@ void main() {
 
   Widget createTestWidget() {
     return ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(testPrefs),
-      ],
+      overrides: [sharedPreferencesProvider.overrideWithValue(testPrefs)],
       child: const MyApp(),
     );
   }
@@ -50,7 +48,9 @@ void main() {
   }
 
   group('Auth Screen Widget Tests', () {
-    testWidgets('1. Initial rendering of AuthScreen', (WidgetTester tester) async {
+    testWidgets('1. Initial rendering of AuthScreen', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -62,7 +62,10 @@ void main() {
 
       // Check intro text
       expect(find.textContaining('Welcome'), findsOneWidget);
-      expect(find.textContaining('Login to continue your journey'), findsOneWidget);
+      expect(
+        find.textContaining('Login to continue your journey'),
+        findsOneWidget,
+      );
 
       // Check inputs and buttons
       expect(find.byType(AuthModeTabs), findsOneWidget);
@@ -72,7 +75,9 @@ void main() {
       expect(find.text('Login'), findsWidgets); // Both tab & button text
     });
 
-    testWidgets('2. Tab switching between Login and Sign Up', (WidgetTester tester) async {
+    testWidgets('2. Tab switching between Login and Sign Up', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -84,14 +89,20 @@ void main() {
       // Check that it transitioned to SignupScreen
       expect(find.byType(SignupScreen), findsOneWidget);
 
-      final mainScrollable = find.descendant(
-        of: find.byType(SingleChildScrollView),
-        matching: find.byType(Scrollable),
-      ).first;
+      final mainScrollable = find
+          .descendant(
+            of: find.byType(SingleChildScrollView),
+            matching: find.byType(Scrollable),
+          )
+          .first;
 
       // Scroll to login redirect and tap it
       final loginRedirect = find.byType(LoginRedirect);
-      await tester.scrollUntilVisible(loginRedirect, 50.0, scrollable: mainScrollable);
+      await tester.scrollUntilVisible(
+        loginRedirect,
+        50.0,
+        scrollable: mainScrollable,
+      );
       await tester.tap(loginRedirect);
       await tester.pumpAndSettle();
 
@@ -100,7 +111,9 @@ void main() {
       expect(find.textContaining('Welcome'), findsOneWidget);
     });
 
-    testWidgets('3. Form validation triggers error messages', (WidgetTester tester) async {
+    testWidgets('3. Form validation triggers error messages', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -115,13 +128,17 @@ void main() {
       expect(find.text('Password cannot be empty'), findsOneWidget);
     });
 
-    testWidgets('4. Password visibility toggle works correctly', (WidgetTester tester) async {
+    testWidgets('4. Password visibility toggle works correctly', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
       final passwordFieldFinder = find.byKey(const ValueKey('password_field'));
-      final passwordFieldWidget = tester.widget<GlassAuthTextField>(passwordFieldFinder);
+      final passwordFieldWidget = tester.widget<GlassAuthTextField>(
+        passwordFieldFinder,
+      );
       expect(passwordFieldWidget.obscureText, isTrue);
 
       // Tap visibility toggle icon
@@ -131,18 +148,28 @@ void main() {
       await tester.pump();
 
       // Re-query text field widget and verify obscureText has changed
-      final updatedTextField = tester.widget<GlassAuthTextField>(passwordFieldFinder);
+      final updatedTextField = tester.widget<GlassAuthTextField>(
+        passwordFieldFinder,
+      );
       expect(updatedTextField.obscureText, isFalse);
     });
 
-    testWidgets('5. Login loading state and successful home navigation', (WidgetTester tester) async {
+    testWidgets('5. Login loading state and successful home navigation', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
       // Enter credentials
-      await tester.enterText(find.byKey(const ValueKey('email_field')), 'test@socialtree.com');
-      await tester.enterText(find.byKey(const ValueKey('password_field')), 'password123');
+      await tester.enterText(
+        find.byKey(const ValueKey('email_field')),
+        'test@socialtree.com',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('password_field')),
+        'password123',
+      );
       await tester.pump();
 
       // Click CTA
@@ -156,36 +183,46 @@ void main() {
       // Settle simulated network call of 1500ms
       await tester.pump(const Duration(milliseconds: 1600));
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 1500)); // Transition to Home
+      await tester.pump(
+        const Duration(milliseconds: 1500),
+      ); // Transition to Home
 
       // Verify transition to Home screen
       expect(find.byType(SocialHomeScreen), findsOneWidget);
     });
 
-    testWidgets('6. Social Auth button click triggers action', (WidgetTester tester) async {
+    testWidgets('6. Social Auth button click triggers action', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
       // Find Google login button
       final googleBtn = find.byWidgetPredicate(
-        (widget) => widget is SocialAuthButton && widget.provider == SocialProvider.google,
+        (widget) =>
+            widget is SocialAuthButton &&
+            widget.provider == SocialProvider.google,
       );
       expect(googleBtn, findsOneWidget);
 
       await tester.tap(googleBtn);
       await tester.pump(); // Enter social loading status
-      
+
       // Wait for mock duration
       await tester.pump(const Duration(milliseconds: 1300));
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 1500)); // Transition to Home
+      await tester.pump(
+        const Duration(milliseconds: 1500),
+      ); // Transition to Home
 
       // Verify transition to Home
       expect(find.byType(SocialHomeScreen), findsOneWidget);
     });
 
-    testWidgets('7. Responsive Layout does not crash on small viewport', (WidgetTester tester) async {
+    testWidgets('7. Responsive Layout does not crash on small viewport', (
+      WidgetTester tester,
+    ) async {
       // Set small screen dimensions (320 x 720)
       tester.view.physicalSize = const Size(320, 720);
       tester.view.devicePixelRatio = 1.0;
@@ -202,7 +239,9 @@ void main() {
       expect(find.byType(AuthScreen), findsOneWidget);
     });
 
-    testWidgets('8. Accessible text scaling adapts without clipping', (WidgetTester tester) async {
+    testWidgets('8. Accessible text scaling adapts without clipping', (
+      WidgetTester tester,
+    ) async {
       // Simulate system text scaling at 1.3x
       tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;
@@ -225,16 +264,14 @@ void main() {
     });
 
     group('Home feed regression check', () {
-      testWidgets('Social Tree home feed can be opened directly', (WidgetTester tester) async {
+      testWidgets('Social Tree home feed can be opened directly', (
+        WidgetTester tester,
+      ) async {
         setupViewport(tester);
         await tester.pumpWidget(
           ProviderScope(
-            overrides: [
-              sharedPreferencesProvider.overrideWithValue(testPrefs),
-            ],
-            child: const MaterialApp(
-              home: SocialHomeScreen(),
-            ),
+            overrides: [sharedPreferencesProvider.overrideWithValue(testPrefs)],
+            child: const MaterialApp(home: SocialHomeScreen()),
           ),
         );
         await tester.pump();
@@ -289,12 +326,73 @@ class MockHttpHeaders implements HttpHeaders {
 
 class MockHttpClientResponse implements HttpClientResponse {
   static const List<int> _transparentImage = [
-    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
-    0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
-    0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00,
-    0x0A, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
-    0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49,
-    0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+    0x89,
+    0x50,
+    0x4E,
+    0x47,
+    0x0D,
+    0x0A,
+    0x1A,
+    0x0A,
+    0x00,
+    0x00,
+    0x00,
+    0x0D,
+    0x49,
+    0x48,
+    0x44,
+    0x52,
+    0x00,
+    0x00,
+    0x00,
+    0x01,
+    0x00,
+    0x00,
+    0x00,
+    0x01,
+    0x08,
+    0x06,
+    0x00,
+    0x00,
+    0x00,
+    0x1F,
+    0x15,
+    0xC4,
+    0x89,
+    0x00,
+    0x00,
+    0x00,
+    0x0A,
+    0x49,
+    0x44,
+    0x41,
+    0x54,
+    0x78,
+    0x9C,
+    0x63,
+    0x00,
+    0x01,
+    0x00,
+    0x00,
+    0x05,
+    0x00,
+    0x01,
+    0x0D,
+    0x0A,
+    0x2D,
+    0xB4,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x49,
+    0x45,
+    0x4E,
+    0x44,
+    0xAE,
+    0x42,
+    0x60,
+    0x82,
   ];
 
   @override

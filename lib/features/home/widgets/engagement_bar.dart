@@ -7,46 +7,55 @@ class EngagementBar extends StatelessWidget {
   final FeedPost? post;
   final bool isLoading;
   final VoidCallback onLikeTap;
-  final VoidCallback onBookmarkTap;
-  final VoidCallback onCommentTap;
-  final VoidCallback onShareTap;
+  final VoidCallback onNotInterestedTap;
+  final EdgeInsetsGeometry? padding;
 
   const EngagementBar({
     super.key,
     required this.post,
     required this.isLoading,
     required this.onLikeTap,
-    required this.onBookmarkTap,
-    required this.onCommentTap,
-    required this.onShareTap,
+    required this.onNotInterestedTap,
+    this.padding,
+    // Add unused parameters for compatibility
+    VoidCallback? onBookmarkTap,
+    VoidCallback? onCommentTap,
+    VoidCallback? onShareTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return PostActionRow(
+      post: post,
+      isLoading: isLoading,
+      onLikeTap: onLikeTap,
+      onNotInterestedTap: onNotInterestedTap,
+      padding: padding,
+    );
+  }
+}
+
+class PostActionRow extends StatelessWidget {
+  final FeedPost? post;
+  final bool isLoading;
+  final VoidCallback onLikeTap;
+  final VoidCallback onNotInterestedTap;
+  final EdgeInsetsGeometry? padding;
+
+  const PostActionRow({
+    super.key,
+    required this.post,
+    required this.isLoading,
+    required this.onLikeTap,
+    required this.onNotInterestedTap,
+    this.padding,
   });
 
   @override
   Widget build(BuildContext context) {
     if (isLoading || post == null) {
-      return const _EngagementBarSkeleton();
+      return _PostActionRowSkeleton(padding: padding);
     }
-
-    final p = post!;
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    final pillBg = isDark ? const Color(0xFF151515) : Colors.white;
-    final borderColor = isDark
-        ? Colors.white.withValues(alpha: 0.07)
-        : Colors.black.withValues(alpha: 0.07);
-    final textColor = isDark
-        ? AppColors.darkPrimaryText
-        : AppColors.lightPrimaryText;
-    final iconColor = isDark ? AppColors.darkIcon : AppColors.lightIcon;
-
-    final shadowList = [
-      BoxShadow(
-        color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
-        blurRadius: 10,
-        offset: const Offset(0, 4),
-      ),
-    ];
 
     return Padding(
       padding: const EdgeInsets.only(
@@ -55,162 +64,30 @@ class EngagementBar extends StatelessWidget {
         top: 12.0,
         bottom: 0.0,
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return Row(
-            children: [
-              // Left Pill: Like, Comment, Share
-              Expanded(
-                child: Container(
-                  height: 58,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: pillBg,
-                    borderRadius: BorderRadius.circular(29),
-                    border: Border.all(color: borderColor),
-                    boxShadow: shadowList,
-                  ),
-                  child: Row(
-                    children: [
-                      // Like Item
-                      Expanded(
-                        child: _AnimatedEngagementButton(
-                          isActive: p.isLiked,
-                          activeColor: AppColors.liveRed,
-                          iconData: p.isLiked
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          label: _formatCount(p.likeCount),
-                          iconSize: 23,
-                          textColor: textColor,
-                          inactiveIconColor: iconColor,
-                          onTap: onLikeTap,
-                          semanticLabel: 'Like',
-                          gap: 6,
-                        ),
-                      ),
-
-                      // Comment Item
-                      Expanded(
-                        child: _AnimatedEngagementButton(
-                          isActive: false,
-                          activeColor: AppColors.neonLime,
-                          iconData: Icons.chat_bubble_outline_rounded,
-                          label: _formatCount(p.commentCount),
-                          iconSize: 23,
-                          textColor: textColor,
-                          inactiveIconColor: iconColor,
-                          onTap: onCommentTap,
-                          semanticLabel: 'Comment',
-                          gap: 6,
-                        ),
-                      ),
-
-                      // Share Item
-                      Expanded(
-                        child: _AnimatedEngagementButton(
-                          isActive: false,
-                          activeColor: AppColors.neonLime,
-                          iconData: Icons.reply,
-                          label: _formatCount(p.shareCount),
-                          iconSize: 23,
-                          textColor: textColor,
-                          inactiveIconColor: iconColor,
-                          onTap: onShareTap,
-                          semanticLabel: 'Share',
-                          gap: 6,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Right Pill: Bookmark
-              SizedBox(
-                width: 100,
-                child: Container(
-                  height: 58,
-                  decoration: BoxDecoration(
-                    color: pillBg,
-                    borderRadius: BorderRadius.circular(29),
-                    border: Border.all(color: borderColor),
-                    boxShadow: shadowList,
-                  ),
-                  child: _AnimatedEngagementButton(
-                    isActive: p.isBookmarked,
-                    activeColor: AppColors.neonLime,
-                    iconData: p.isBookmarked
-                        ? Icons.bookmark
-                        : Icons.bookmark_border_rounded,
-                    label: _formatCount(p.bookmarkCount),
-                    iconSize: 23,
-                    textColor: textColor,
-                    inactiveIconColor: iconColor,
-                    onTap: onBookmarkTap,
-                    semanticLabel: 'Bookmark',
-                    gap: 7,
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
+      child: Row(
+        children: [
+          Expanded(
+            child: LikeActionButton(post: post!, onTap: onLikeTap),
+          ),
+          const SizedBox(width: 14),
+          Expanded(child: NotInterestedButton(onTap: onNotInterestedTap)),
+        ],
       ),
     );
   }
-
-  String _formatCount(int count) {
-    if (count >= 1000) {
-      double formatted = count / 1000.0;
-      return '${formatted.toStringAsFixed(1)}K';
-    }
-    return count.toString();
-  }
 }
 
-class _VerticalDivider extends StatelessWidget {
-  final Color color;
-
-  const _VerticalDivider({required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(width: 1, height: 24, color: color);
-  }
-}
-
-class _AnimatedEngagementButton extends StatefulWidget {
-  final bool isActive;
-  final Color activeColor;
-  final IconData iconData;
-  final String label;
-  final double iconSize;
-  final Color textColor;
-  final Color inactiveIconColor;
+class LikeActionButton extends StatefulWidget {
+  final FeedPost post;
   final VoidCallback onTap;
-  final String semanticLabel;
-  final double gap;
 
-  const _AnimatedEngagementButton({
-    required this.isActive,
-    required this.activeColor,
-    required this.iconData,
-    required this.label,
-    required this.iconSize,
-    required this.textColor,
-    required this.inactiveIconColor,
-    required this.onTap,
-    required this.semanticLabel,
-    required this.gap,
-  });
+  const LikeActionButton({super.key, required this.post, required this.onTap});
 
   @override
-  State<_AnimatedEngagementButton> createState() =>
-      _AnimatedEngagementButtonState();
+  State<LikeActionButton> createState() => _LikeActionButtonState();
 }
 
-class _AnimatedEngagementButtonState extends State<_AnimatedEngagementButton>
+class _LikeActionButtonState extends State<LikeActionButton>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
@@ -223,9 +100,9 @@ class _AnimatedEngagementButtonState extends State<_AnimatedEngagementButton>
       duration: const Duration(milliseconds: 200),
     );
     _scaleAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.96), weight: 50),
-      TweenSequenceItem(tween: Tween(begin: 0.96, end: 1.0), weight: 50),
-    ]).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.25), weight: 50),
+      TweenSequenceItem(tween: Tween(begin: 1.25, end: 1.0), weight: 50),
+    ]).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
   }
 
   @override
@@ -235,62 +112,152 @@ class _AnimatedEngagementButtonState extends State<_AnimatedEngagementButton>
   }
 
   @override
-  void didUpdateWidget(covariant _AnimatedEngagementButton oldWidget) {
+  void didUpdateWidget(covariant LikeActionButton oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.isActive != oldWidget.isActive) {
+    if (widget.post.isLiked != oldWidget.post.isLiked && widget.post.isLiked) {
       _controller.forward(from: 0.0);
     }
   }
 
+  String _formatCount(int count) {
+    if (count >= 1000) {
+      double formatted = count / 1000.0;
+      return '${formatted.toStringAsFixed(1)}K';
+    }
+    return count.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final currentIconColor = widget.isActive
-        ? widget.activeColor
-        : widget.inactiveIconColor;
+    final isLiked = widget.post.isLiked;
+    final limeColor = AppColors.neonLime;
 
     return Semantics(
-      label: widget.semanticLabel,
+      label: 'Like post',
+      selected: isLiked,
       button: true,
-      child: InkWell(
+      child: GestureDetector(
         onTap: () {
           _controller.forward(from: 0.0);
           widget.onTap();
         },
-        borderRadius: BorderRadius.circular(29),
+        child: Container(
+          height: 58,
+          decoration: BoxDecoration(
+            color: isLiked
+                ? limeColor.withOpacity(0.05)
+                : const Color(0xFF121212),
+            borderRadius: BorderRadius.circular(29),
+            border: Border.all(color: limeColor, width: 1.5),
+          ),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AnimatedBuilder(
+                animation: _scaleAnimation,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: _scaleAnimation.value,
+                    child: child,
+                  );
+                },
+                child: Icon(
+                  isLiked ? Icons.favorite : Icons.favorite_border,
+                  color: limeColor,
+                  size: 26,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Text(
+                _formatCount(widget.post.likeCount),
+                style: AppTypography.getEngagementCount(
+                  Colors.white,
+                ).copyWith(fontSize: 17, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class NotInterestedButton extends StatefulWidget {
+  final VoidCallback onTap;
+
+  const NotInterestedButton({super.key, required this.onTap});
+
+  @override
+  State<NotInterestedButton> createState() => _NotInterestedButtonState();
+}
+
+class _NotInterestedButtonState extends State<NotInterestedButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.97).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Not interested',
+      button: true,
+      child: GestureDetector(
+        onTapDown: (_) => _controller.forward(),
+        onTapCancel: () => _controller.reverse(),
+        onTap: () {
+          _controller.reverse();
+          widget.onTap();
+        },
         child: AnimatedBuilder(
           animation: _scaleAnimation,
           builder: (context, child) {
             return Transform.scale(scale: _scaleAnimation.value, child: child);
           },
-          child: SizedBox(
+          child: Container(
             height: 58,
+            decoration: BoxDecoration(
+              color: const Color(0xFF121212),
+              borderRadius: BorderRadius.circular(29),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.18),
+                width: 1.0,
+              ),
+            ),
+            alignment: Alignment.center,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                widget.semanticLabel == 'Share'
-                    ? Transform.flip(
-                        flipX: true,
-                        child: Icon(
-                          widget.iconData,
-                          color: currentIconColor,
-                          size: widget.iconSize,
-                        ),
-                      )
-                    : Icon(
-                        widget.iconData,
-                        color: currentIconColor,
-                        size: widget.iconSize,
-                      ),
-                SizedBox(width: widget.gap),
+                const Icon(
+                  Icons.block_rounded,
+                  color: AppColors.darkSecondaryText,
+                  size: 26,
+                ),
+                const SizedBox(width: 12),
                 Flexible(
                   child: Text(
-                    widget.label,
-                    style: AppTypography.getEngagementCount(
-                      widget.textColor,
-                    ).copyWith(fontSize: 15, fontWeight: FontWeight.w600),
+                    'Not interested',
+                    style: AppTypography.getNotInterested(
+                      AppColors.darkSecondaryText,
+                    ),
                     maxLines: 1,
-                    overflow: TextOverflow.fade,
-                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -302,14 +269,16 @@ class _AnimatedEngagementButtonState extends State<_AnimatedEngagementButton>
   }
 }
 
-class _EngagementBarSkeleton extends StatefulWidget {
-  const _EngagementBarSkeleton();
+class _PostActionRowSkeleton extends StatefulWidget {
+  final EdgeInsetsGeometry? padding;
+
+  const _PostActionRowSkeleton({this.padding});
 
   @override
-  State<_EngagementBarSkeleton> createState() => _EngagementBarSkeletonState();
+  State<_PostActionRowSkeleton> createState() => _PostActionRowSkeletonState();
 }
 
-class _EngagementBarSkeletonState extends State<_EngagementBarSkeleton>
+class _PostActionRowSkeletonState extends State<_PostActionRowSkeleton>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _opacity;
@@ -334,8 +303,8 @@ class _EngagementBarSkeletonState extends State<_EngagementBarSkeleton>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final baseColor = isDark
-        ? Colors.white.withValues(alpha: 0.08)
-        : Colors.black.withValues(alpha: 0.05);
+        ? Colors.white.withOpacity(0.08)
+        : Colors.black.withOpacity(0.05);
 
     return AnimatedBuilder(
       animation: _opacity,
@@ -343,39 +312,36 @@ class _EngagementBarSkeletonState extends State<_EngagementBarSkeleton>
         return Opacity(opacity: _opacity.value, child: child);
       },
       child: Padding(
-        padding: const EdgeInsets.only(
-          left: 18.0,
-          right: 18.0,
-          top: 12.0,
-          bottom: 0.0,
-        ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    height: 58,
-                    decoration: BoxDecoration(
-                      color: baseColor,
-                      borderRadius: BorderRadius.circular(29),
-                    ),
-                  ),
+        padding:
+            widget.padding ??
+            const EdgeInsets.only(
+              left: 18.0,
+              right: 18.0,
+              top: 12.0,
+              bottom: 0.0,
+            ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Container(
+                height: 58,
+                decoration: BoxDecoration(
+                  color: baseColor,
+                  borderRadius: BorderRadius.circular(29),
                 ),
-                const SizedBox(width: 12),
-                SizedBox(
-                  width: 100,
-                  child: Container(
-                    height: 58,
-                    decoration: BoxDecoration(
-                      color: baseColor,
-                      borderRadius: BorderRadius.circular(29),
-                    ),
-                  ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Container(
+                height: 58,
+                decoration: BoxDecoration(
+                  color: baseColor,
+                  borderRadius: BorderRadius.circular(29),
                 ),
-              ],
-            );
-          },
+              ),
+            ),
+          ],
         ),
       ),
     );

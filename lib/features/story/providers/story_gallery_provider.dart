@@ -6,7 +6,7 @@ enum GalleryPermissionState {
   limited,
   denied,
   permanentlyDenied,
-  loading
+  loading,
 }
 
 class GalleryMedia {
@@ -67,65 +67,77 @@ class StoryGalleryState {
 
 final storyGalleryProvider =
     NotifierProvider<StoryGalleryNotifier, StoryGalleryState>(
-  StoryGalleryNotifier.new,
-);
+      StoryGalleryNotifier.new,
+    );
 
 class StoryGalleryNotifier extends Notifier<StoryGalleryState> {
   // Pre-configured high-quality assets to mimic phone photo gallery
   static final List<GalleryMedia> _allMockMedia = [
     const GalleryMedia(
       id: 'gallery_photo_1',
-      path: 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=600&auto=format&fit=crop',
+      path:
+          'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=600&auto=format&fit=crop',
       isVideo: false,
     ),
     const GalleryMedia(
       id: 'gallery_photo_2',
-      path: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=600&auto=format&fit=crop',
+      path:
+          'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=600&auto=format&fit=crop',
       isVideo: false,
     ),
     const GalleryMedia(
       id: 'gallery_photo_3',
-      path: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&auto=format&fit=crop',
+      path:
+          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&auto=format&fit=crop',
       isVideo: false,
     ),
     const GalleryMedia(
       id: 'gallery_photo_4',
-      path: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=600&auto=format&fit=crop',
+      path:
+          'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=600&auto=format&fit=crop',
       isVideo: false,
     ),
     const GalleryMedia(
       id: 'gallery_photo_5',
-      path: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=600&auto=format&fit=crop',
+      path:
+          'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=600&auto=format&fit=crop',
       isVideo: false,
     ),
     const GalleryMedia(
       id: 'gallery_video_1',
-      path: 'https://assets.mixkit.co/videos/preview/mixkit-girl-in-neon-sign-city-40011-large.mp4',
+      path:
+          'https://assets.mixkit.co/videos/preview/mixkit-girl-in-neon-sign-city-40011-large.mp4',
       isVideo: true,
       duration: Duration(seconds: 45),
-      thumbnailPath: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=600&auto=format&fit=crop',
+      thumbnailPath:
+          'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=600&auto=format&fit=crop',
     ),
     const GalleryMedia(
       id: 'gallery_photo_6',
-      path: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop',
+      path:
+          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop',
       isVideo: false,
     ),
     const GalleryMedia(
       id: 'gallery_photo_7',
-      path: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=600&auto=format&fit=crop',
+      path:
+          'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=600&auto=format&fit=crop',
       isVideo: false,
     ),
     const GalleryMedia(
       id: 'gallery_photo_8',
-      path: 'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?q=80&w=600&auto=format&fit=crop',
+      path:
+          'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?q=80&w=600&auto=format&fit=crop',
       isVideo: false,
     ),
     const GalleryMedia(
       id: 'gallery_video_2',
-      path: 'https://assets.mixkit.co/videos/preview/mixkit-concert-crowd-raising-hands-12885-large.mp4',
+      path:
+          'https://assets.mixkit.co/videos/preview/mixkit-concert-crowd-raising-hands-12885-large.mp4',
       isVideo: true,
       duration: Duration(seconds: 75), // Long video (>60s)
-      thumbnailPath: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=600&auto=format&fit=crop',
+      thumbnailPath:
+          'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=600&auto=format&fit=crop',
     ),
   ];
 
@@ -170,10 +182,7 @@ class StoryGalleryNotifier extends Notifier<StoryGalleryState> {
       filtered = filtered.where((item) => item.isVideo).toList();
     }
 
-    state = state.copyWith(
-      mediaItems: filtered,
-      isLoading: false,
-    );
+    state = state.copyWith(mediaItems: filtered, isLoading: false);
   }
 
   void selectAlbum(String album) {

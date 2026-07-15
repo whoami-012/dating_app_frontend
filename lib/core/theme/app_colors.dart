@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Common Accents
-  static const Color neonLime = Color(0xFFC8FF3D);
-  static const Color liveOrange = Color(0xFFFF5030);
+  static const Color neonLime = Color(0xFFC9FF24);
+  static const Color liveOrange = Color(0xFFFF572D);
   static const Color liveRed = Color(0xFFFF2A54);
   static const Color gemBlue = Color(0xFF3B82F6);
   static const Color gemPurple = Color(0xFF8B5CF6);
@@ -24,18 +24,18 @@ class AppColors {
     Color(0xFFEF4444), // Orange/Red
     Color(0xFFF59E0B), // Yellow
     Color(0xFF10B981), // Green/Cyan
-    Color(0xFFC8FF3D), // Lime
+    Color(0xFFC9FF24), // Lime
   ];
 
   // Dark Theme Colors
-  static const Color darkBackground = Color(0xFF050505);
-  static const Color darkSurface = Color(0xFF101010);
+  static const Color darkBackground = Color(0xFF000000);
+  static const Color darkSurface = Color(0xFF121212);
   static const Color darkSecondarySurface = Color(0xFF171717);
-  static const Color darkSelectedNavTile = Color(0xFF222222);
-  static const Color darkPrimaryText = Color(0xFFF7F7F7);
-  static const Color darkSecondaryText = Color(0xFFA4A4A8);
-  static const Color darkMutedText = Color(0xFF747478);
-  static final Color darkBorder = Colors.white.withOpacity(0.08);
+  static const Color darkSelectedNavTile = Color(0xFF171717);
+  static const Color darkPrimaryText = Color(0xFFF5F5F5);
+  static const Color darkSecondaryText = Color(0xFFA2A2A8);
+  static const Color darkMutedText = Color(0xFF77777F);
+  static final Color darkBorder = Colors.white.withOpacity(0.07);
   static const Color darkIcon = Color(0xFFE5E5E5);
 
   // Light Theme Colors

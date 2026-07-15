@@ -17,7 +17,8 @@ class StoryComposerScreen extends ConsumerStatefulWidget {
   const StoryComposerScreen({super.key});
 
   @override
-  ConsumerState<StoryComposerScreen> createState() => _StoryComposerScreenState();
+  ConsumerState<StoryComposerScreen> createState() =>
+      _StoryComposerScreenState();
 }
 
 class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
@@ -35,7 +36,9 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
 
   Future<void> _handleCameraCapture() async {
     try {
-      final XFile? file = await _cameraPicker.pickImage(source: ImageSource.camera);
+      final XFile? file = await _cameraPicker.pickImage(
+        source: ImageSource.camera,
+      );
       if (file != null) {
         final persistentPath = await MediaHelper.handleSelectedPath(file.path);
         // Simulate adding to gallery and selection
@@ -48,9 +51,9 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Camera capture failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Camera capture failed: $e')));
       }
     }
   }
@@ -74,9 +77,8 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => StoryPreviewScreen(
-                      items: composerState.selectedItems,
-                    ),
+                    builder: (context) =>
+                        StoryPreviewScreen(items: composerState.selectedItems),
                   ),
                 );
               },
@@ -86,21 +88,31 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
             if (composerState.errorMessage != null)
               Container(
                 color: Colors.redAccent,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
                       child: Text(
                         composerState.errorMessage!,
-                        style: const TextStyle(color: Colors.white, fontSize: 13),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                     GestureDetector(
                       onTap: () {
                         ref.read(storyComposerProvider.notifier).clearError();
                       },
-                      child: const Icon(Icons.close, color: Colors.white, size: 16),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 16,
+                      ),
                     ),
                   ],
                 ),
@@ -108,7 +120,8 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
 
             // 3. Permission State Banner (if permission is limited or denied)
             if (galleryState.permissionState == GalleryPermissionState.denied ||
-                galleryState.permissionState == GalleryPermissionState.permanentlyDenied)
+                galleryState.permissionState ==
+                    GalleryPermissionState.permanentlyDenied)
               _buildPermissionPanel()
             else
               // 4. Main Canvas Editor Area
@@ -117,12 +130,17 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
                     ? _buildEmptyState()
                     : LayoutBuilder(
                         builder: (context, constraints) {
-                          final hasIndicator = composerState.selectedItems.length > 1;
-                          final double indicatorHeight = hasIndicator ? 30.0 : 0.0;
-                          
+                          final hasIndicator =
+                              composerState.selectedItems.length > 1;
+                          final double indicatorHeight = hasIndicator
+                              ? 30.0
+                              : 0.0;
+
                           // Leave a 16px safety padding
-                          final double availableHeight = constraints.maxHeight - indicatorHeight - 16;
-                          final double availableWidth = constraints.maxWidth - 32;
+                          final double availableHeight =
+                              constraints.maxHeight - indicatorHeight - 16;
+                          final double availableWidth =
+                              constraints.maxWidth - 32;
 
                           // Fit 9:16 aspect ratio in available height/width
                           double canvasHeight = availableHeight;
@@ -152,7 +170,9 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
 
                               // Listening for active tool sheets
                               if (composerState.activeTool != null)
-                                _buildToolOverlaySheet(composerState.activeTool!),
+                                _buildToolOverlaySheet(
+                                  composerState.activeTool!,
+                                ),
                             ],
                           );
                         },
@@ -161,7 +181,8 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
 
             // 5. Gallery Sheet
             if (galleryState.permissionState != GalleryPermissionState.denied &&
-                galleryState.permissionState != GalleryPermissionState.permanentlyDenied)
+                galleryState.permissionState !=
+                    GalleryPermissionState.permanentlyDenied)
               SizedBox(
                 height: composerState.selectedItems.isEmpty
                     ? MediaQuery.of(context).size.height * 0.7
@@ -207,10 +228,7 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
             const SizedBox(height: 8),
             const Text(
               'Choose from the gallery below or capture with camera',
-              style: TextStyle(
-                color: Color(0xFFA3A4AA),
-                fontSize: 13,
-              ),
+              style: TextStyle(color: Color(0xFFA3A4AA), fontSize: 13),
             ),
           ],
         ),
@@ -226,11 +244,19 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.lock_outline_rounded, color: Colors.redAccent, size: 48),
+              const Icon(
+                Icons.lock_outline_rounded,
+                color: Colors.redAccent,
+                size: 48,
+              ),
               const SizedBox(height: 16),
               const Text(
                 'Gallery Permission Denied',
-                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 12),
               const Text(
@@ -243,13 +269,20 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFD1FF2F),
                   foregroundColor: const Color(0xFF050506),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                 ),
                 onPressed: () {
                   // Simulate granting permissions
-                  ref.read(storyGalleryProvider.notifier).updatePermissionState(GalleryPermissionState.granted);
+                  ref
+                      .read(storyGalleryProvider.notifier)
+                      .updatePermissionState(GalleryPermissionState.granted);
                 },
-                child: const Text('Grant Access (Simulated)', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Grant Access (Simulated)',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
@@ -312,8 +345,13 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 GestureDetector(
-                  onTap: () => ref.read(storyComposerProvider.notifier).setActiveTool(null),
-                  child: const Text('Cancel', style: TextStyle(color: Colors.white, fontSize: 16)),
+                  onTap: () => ref
+                      .read(storyComposerProvider.notifier)
+                      .setActiveTool(null),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
                 ),
                 GestureDetector(
                   onTap: () {
@@ -325,11 +363,22 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
                         colorHex: colorHex,
                         textStyle: textStyle,
                       );
-                      ref.read(storyComposerProvider.notifier).addOverlay(newOverlay);
+                      ref
+                          .read(storyComposerProvider.notifier)
+                          .addOverlay(newOverlay);
                     }
-                    ref.read(storyComposerProvider.notifier).setActiveTool(null);
+                    ref
+                        .read(storyComposerProvider.notifier)
+                        .setActiveTool(null);
                   },
-                  child: const Text('Done', style: TextStyle(color: Color(0xFFD1FF2F), fontSize: 16, fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'Done',
+                    style: TextStyle(
+                      color: Color(0xFFD1FF2F),
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -338,13 +387,17 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
               controller: textController,
               autofocus: true,
               style: TextStyle(
-                color: textStyle == 'background' ? Colors.black : Color(int.parse(colorHex)),
+                color: textStyle == 'background'
+                    ? Colors.black
+                    : Color(int.parse(colorHex)),
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
               ),
               decoration: InputDecoration(
                 filled: textStyle == 'background',
-                fillColor: textStyle == 'background' ? Color(int.parse(colorHex)) : Colors.transparent,
+                fillColor: textStyle == 'background'
+                    ? Color(int.parse(colorHex))
+                    : Colors.transparent,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide.none,
@@ -358,35 +411,51 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
             // Colors list
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                '0xFFD1FF2F', '0xFFFFFFFF', '0xFFFF3B30', '0xFF34C759', '0xFF007AFF'
-              ].map((cHex) => GestureDetector(
-                onTap: () {
-                  setState(() {
-                    colorHex = cHex;
-                  });
-                },
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  margin: const EdgeInsets.symmetric(horizontal: 6),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Color(int.parse(cHex)),
-                    border: Border.all(color: Colors.white, width: colorHex == cHex ? 2.0 : 0.0),
-                  ),
-                ),
-              )).toList(),
+              children:
+                  [
+                        '0xFFD1FF2F',
+                        '0xFFFFFFFF',
+                        '0xFFFF3B30',
+                        '0xFF34C759',
+                        '0xFF007AFF',
+                      ]
+                      .map(
+                        (cHex) => GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              colorHex = cHex;
+                            });
+                          },
+                          child: Container(
+                            width: 32,
+                            height: 32,
+                            margin: const EdgeInsets.symmetric(horizontal: 6),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(int.parse(cHex)),
+                              border: Border.all(
+                                color: Colors.white,
+                                width: colorHex == cHex ? 2.0 : 0.0,
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
             ),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildTextStyleButton('Background', textStyle == 'background', () {
-                  setState(() {
-                    textStyle = 'background';
-                  });
-                }),
+                _buildTextStyleButton(
+                  'Background',
+                  textStyle == 'background',
+                  () {
+                    setState(() {
+                      textStyle = 'background';
+                    });
+                  },
+                ),
                 const SizedBox(width: 12),
                 _buildTextStyleButton('Normal', textStyle == 'normal', () {
                   setState(() {
@@ -445,10 +514,16 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
               children: [
                 const Text(
                   'Select Emojis & Stickers',
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 GestureDetector(
-                  onTap: () => ref.read(storyComposerProvider.notifier).setActiveTool(null),
+                  onTap: () => ref
+                      .read(storyComposerProvider.notifier)
+                      .setActiveTool(null),
                   child: const Icon(Icons.close, color: Colors.white, size: 20),
                 ),
               ],
@@ -472,8 +547,12 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
                         stickerPath: sticker,
                         stickerType: 'emoji',
                       );
-                      ref.read(storyComposerProvider.notifier).addOverlay(newOverlay);
-                      ref.read(storyComposerProvider.notifier).setActiveTool(null);
+                      ref
+                          .read(storyComposerProvider.notifier)
+                          .addOverlay(newOverlay);
+                      ref
+                          .read(storyComposerProvider.notifier)
+                          .setActiveTool(null);
                     },
                     child: Container(
                       alignment: Alignment.center,
@@ -481,7 +560,10 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
                         color: Colors.white.withOpacity(0.04),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text(sticker, style: const TextStyle(fontSize: 32)),
+                      child: Text(
+                        sticker,
+                        style: const TextStyle(fontSize: 32),
+                      ),
                     ),
                   );
                 },
@@ -521,10 +603,16 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
               children: [
                 const Text(
                   'Attach Music',
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 GestureDetector(
-                  onTap: () => ref.read(storyComposerProvider.notifier).setActiveTool(null),
+                  onTap: () => ref
+                      .read(storyComposerProvider.notifier)
+                      .setActiveTool(null),
                   child: const Icon(Icons.close, color: Colors.white, size: 20),
                 ),
               ],
@@ -536,10 +624,22 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
                 itemBuilder: (context, index) {
                   final track = tracks[index];
                   return ListTile(
-                    leading: const Icon(Icons.music_note, color: Color(0xFFD1FF2F)),
-                    title: Text(track['title']!, style: const TextStyle(color: Colors.white)),
-                    subtitle: Text(track['artist']!, style: const TextStyle(color: Colors.grey)),
-                    trailing: const Icon(Icons.add_circle_outline, color: Colors.white54),
+                    leading: const Icon(
+                      Icons.music_note,
+                      color: Color(0xFFD1FF2F),
+                    ),
+                    title: Text(
+                      track['title']!,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    subtitle: Text(
+                      track['artist']!,
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                    trailing: const Icon(
+                      Icons.add_circle_outline,
+                      color: Colors.white54,
+                    ),
                     onTap: () {
                       final music = StoryMusic(
                         id: 'music_${DateTime.now().millisecondsSinceEpoch}',
@@ -548,8 +648,12 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
                         durationSeconds: 15,
                         startPointSeconds: 0,
                       );
-                      ref.read(storyComposerProvider.notifier).attachMusic(music);
-                      ref.read(storyComposerProvider.notifier).setActiveTool(null);
+                      ref
+                          .read(storyComposerProvider.notifier)
+                          .attachMusic(music);
+                      ref
+                          .read(storyComposerProvider.notifier)
+                          .setActiveTool(null);
                     },
                   );
                 },
@@ -584,14 +688,32 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
               children: [
                 const Text(
                   'Crop & Transform',
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 GestureDetector(
                   onTap: () {
-                    ref.read(storyComposerProvider.notifier).applyCropAndTransform(rotation: rotation, scale: scale);
-                    ref.read(storyComposerProvider.notifier).setActiveTool(null);
+                    ref
+                        .read(storyComposerProvider.notifier)
+                        .applyCropAndTransform(
+                          rotation: rotation,
+                          scale: scale,
+                        );
+                    ref
+                        .read(storyComposerProvider.notifier)
+                        .setActiveTool(null);
                   },
-                  child: const Text('Apply', style: TextStyle(color: Color(0xFFD1FF2F), fontSize: 15, fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'Apply',
+                    style: TextStyle(
+                      color: Color(0xFFD1FF2F),
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -602,31 +724,52 @@ class _StoryComposerScreenState extends ConsumerState<StoryComposerScreen> {
                 Column(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.rotate_right_rounded, color: Colors.white, size: 28),
+                      icon: const Icon(
+                        Icons.rotate_right_rounded,
+                        color: Colors.white,
+                        size: 28,
+                      ),
                       onPressed: () {
                         setState(() {
                           rotation += 0.5 * 3.14159 / 2; // ~45 deg
                         });
-                        ref.read(storyComposerProvider.notifier).applyCropAndTransform(rotation: rotation, scale: scale);
+                        ref
+                            .read(storyComposerProvider.notifier)
+                            .applyCropAndTransform(
+                              rotation: rotation,
+                              scale: scale,
+                            );
                       },
                     ),
-                    const Text('Rotate 90°', style: TextStyle(color: Colors.grey, fontSize: 11)),
+                    const Text(
+                      'Rotate 90°',
+                      style: TextStyle(color: Colors.grey, fontSize: 11),
+                    ),
                   ],
                 ),
                 const SizedBox(width: 48),
                 Column(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.restart_alt_rounded, color: Colors.redAccent, size: 28),
+                      icon: const Icon(
+                        Icons.restart_alt_rounded,
+                        color: Colors.redAccent,
+                        size: 28,
+                      ),
                       onPressed: () {
                         setState(() {
                           rotation = 0.0;
                           scale = 1.0;
                         });
-                        ref.read(storyComposerProvider.notifier).applyCropAndTransform(rotation: 0.0, scale: 1.0);
+                        ref
+                            .read(storyComposerProvider.notifier)
+                            .applyCropAndTransform(rotation: 0.0, scale: 1.0);
                       },
                     ),
-                    const Text('Reset', style: TextStyle(color: Colors.grey, fontSize: 11)),
+                    const Text(
+                      'Reset',
+                      style: TextStyle(color: Colors.grey, fontSize: 11),
+                    ),
                   ],
                 ),
               ],

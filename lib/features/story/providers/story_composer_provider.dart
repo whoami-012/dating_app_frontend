@@ -30,8 +30,8 @@ class StoryComposerState {
 
   StoryMediaItem? get activeItem =>
       selectedItems.isNotEmpty && activeItemIndex < selectedItems.length
-          ? selectedItems[activeItemIndex]
-          : null;
+      ? selectedItems[activeItemIndex]
+      : null;
 
   StoryComposerState copyWith({
     List<StoryMediaItem>? selectedItems,
@@ -56,8 +56,8 @@ class StoryComposerState {
 
 final storyComposerProvider =
     NotifierProvider<StoryComposerNotifier, StoryComposerState>(
-  StoryComposerNotifier.new,
-);
+      StoryComposerNotifier.new,
+    );
 
 class StoryComposerNotifier extends Notifier<StoryComposerState> {
   late SharedPreferences _prefs;
@@ -97,8 +97,7 @@ class StoryComposerNotifier extends Notifier<StoryComposerState> {
   }
 
   Future<void> deleteDraft(String id) async {
-    final updatedDrafts =
-        state.savedDrafts.where((d) => d.id != id).toList();
+    final updatedDrafts = state.savedDrafts.where((d) => d.id != id).toList();
     state = state.copyWith(savedDrafts: updatedDrafts);
     await _syncDraftsToPrefs();
   }
@@ -126,14 +125,16 @@ class StoryComposerNotifier extends Notifier<StoryComposerState> {
     if (state.selectedItems.any((item) => item.path == media.path)) {
       // Remove it (toggle selection)
       removeMediaItem(
-          state.selectedItems.firstWhere((item) => item.path == media.path).id);
+        state.selectedItems.firstWhere((item) => item.path == media.path).id,
+      );
       return;
     }
 
     // Limit count (max 10 stories)
     if (state.selectedItems.length >= 10) {
       state = state.copyWith(
-          errorMessage: 'You can select a maximum of 10 items.');
+        errorMessage: 'You can select a maximum of 10 items.',
+      );
       return;
     }
 
@@ -142,7 +143,8 @@ class StoryComposerNotifier extends Notifier<StoryComposerState> {
         media.duration != null &&
         media.duration!.inSeconds > 60) {
       state = state.copyWith(
-          errorMessage: 'Video exceeds maximum duration of 60 seconds.');
+        errorMessage: 'Video exceeds maximum duration of 60 seconds.',
+      );
       return;
     }
 
@@ -198,25 +200,16 @@ class StoryComposerNotifier extends Notifier<StoryComposerState> {
       newActive++;
     }
 
-    state = state.copyWith(
-      selectedItems: list,
-      activeItemIndex: newActive,
-    );
+    state = state.copyWith(selectedItems: list, activeItemIndex: newActive);
   }
 
   void selectItemIndex(int index) {
     if (index < 0 || index >= state.selectedItems.length) return;
-    state = state.copyWith(
-      activeItemIndex: index,
-      clearTool: true,
-    );
+    state = state.copyWith(activeItemIndex: index, clearTool: true);
   }
 
   void setActiveTool(StoryTool? tool) {
-    state = state.copyWith(
-      activeTool: tool,
-      clearTool: tool == null,
-    );
+    state = state.copyWith(activeTool: tool, clearTool: tool == null);
   }
 
   void clearError() {
@@ -344,7 +337,10 @@ class StoryComposerNotifier extends Notifier<StoryComposerState> {
     state = state.copyWith(selectedItems: updatedItems);
   }
 
-  void applyCropAndTransform({required double rotation, required double scale}) {
+  void applyCropAndTransform({
+    required double rotation,
+    required double scale,
+  }) {
     final active = state.activeItem;
     if (active == null) return;
 

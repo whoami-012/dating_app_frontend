@@ -20,9 +20,7 @@ class StoryUploadProgress extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF111214),
         border: Border(
-          bottom: BorderSide(
-            color: Colors.white.withOpacity(0.08),
-          ),
+          bottom: BorderSide(color: Colors.white.withOpacity(0.08)),
         ),
       ),
       child: Column(

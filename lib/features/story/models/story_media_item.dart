@@ -143,7 +143,8 @@ class StoryMediaItem {
           ? Duration(milliseconds: json['durationMs'] as int)
           : null,
       thumbnailPath: json['thumbnailPath'] as String?,
-      overlays: (json['overlays'] as List<dynamic>?)
+      overlays:
+          (json['overlays'] as List<dynamic>?)
               ?.map((o) => StoryOverlay.fromJson(o as Map<String, dynamic>))
               .toList() ??
           const [],

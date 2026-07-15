@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 class StorySelectionBadge extends StatelessWidget {
   final int index; // 1-based index, or <= 0 for unselected
 
-  const StorySelectionBadge({
-    super.key,
-    required this.index,
-  });
+  const StorySelectionBadge({super.key, required this.index});
 
   @override
   Widget build(BuildContext context) {

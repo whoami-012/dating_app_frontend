@@ -47,7 +47,7 @@ class StoryShareButton extends StatelessWidget {
                       color: const Color(0xFFD1FF2F).withOpacity(0.2),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
-                    )
+                    ),
                   ]
                 : null,
           ),

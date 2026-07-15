@@ -7,18 +7,25 @@ class PostCaption extends StatelessWidget {
   final FeedPost? post;
   final bool isLoading;
   final VoidCallback onTap;
+  final EdgeInsetsGeometry? padding;
+  final double? creatorToCaptionGap;
 
   const PostCaption({
     super.key,
     required this.post,
     required this.isLoading,
     required this.onTap,
+    this.padding,
+    this.creatorToCaptionGap,
   });
 
   @override
   Widget build(BuildContext context) {
     if (isLoading || post == null) {
-      return const _PostCaptionSkeleton();
+      return _PostCaptionSkeleton(
+        padding: padding,
+        creatorToCaptionGap: creatorToCaptionGap,
+      );
     }
 
     final p = post!;
@@ -31,60 +38,71 @@ class PostCaption extends StatelessWidget {
     final secondaryColor = isDark
         ? AppColors.darkSecondaryText
         : AppColors.lightSecondaryText;
+    final mutedColor = isDark
+        ? AppColors.darkMutedText
+        : AppColors.lightMutedText;
 
     return Padding(
-      padding: const EdgeInsets.only(
-        left: 18.0,
-        right: 18.0,
-        top: 18.0,
-        bottom: 12.0,
-      ),
+      padding:
+          padding ??
+          const EdgeInsets.only(
+            left: 18.0,
+            right: 18.0,
+            top: 18.0,
+            bottom: 12.0,
+          ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Circular Avatar with a subtle border
-            Container(
-              width: 46,
-              height: 46,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isDark ? Colors.white10 : Colors.black12,
-                  width: 1.5,
-                ),
-                image: DecorationImage(
-                  image: NetworkImage(p.authorAvatarUrl),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-
-            // Text block (username + caption)
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 2.0),
-                child: RichText(
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  text: TextSpan(
-                    style: AppTypography.getCaption(
-                      secondaryColor,
-                    ).copyWith(fontSize: 15, height: 1.33),
-                    children: [
-                      TextSpan(
-                        text: '${p.author} ',
-                        style: AppTypography.getUsername(
-                          primaryColor,
-                        ).copyWith(fontSize: 16, fontWeight: FontWeight.w700),
-                      ),
-                      TextSpan(text: p.caption),
-                    ],
+            // 3. Creator information row
+            Row(
+              children: [
+                // Circular creator avatar
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: DecorationImage(
+                      image: NetworkImage(p.authorAvatarUrl),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
+                const SizedBox(width: 12),
+
+                // Username
+                Text(
+                  p.author,
+                  style: AppTypography.getUsername(
+                    primaryColor,
+                  ).copyWith(fontSize: 16.5, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(width: 16),
+
+                // Posting time
+                Text(
+                  '2h ago',
+                  style: AppTypography.getCaption(
+                    mutedColor,
+                  ).copyWith(fontSize: 15.5, fontWeight: FontWeight.w400),
+                ),
+              ],
+            ),
+            SizedBox(height: creatorToCaptionGap ?? 12.0),
+
+            // 4. Caption
+            Text(
+              p.caption,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.getCaption(secondaryColor).copyWith(
+                fontSize: 16.5,
+                fontWeight: FontWeight.w400,
+                height: 1.35,
               ),
             ),
           ],
@@ -95,7 +113,10 @@ class PostCaption extends StatelessWidget {
 }
 
 class _PostCaptionSkeleton extends StatefulWidget {
-  const _PostCaptionSkeleton();
+  final EdgeInsetsGeometry? padding;
+  final double? creatorToCaptionGap;
+
+  const _PostCaptionSkeleton({this.padding, this.creatorToCaptionGap});
 
   @override
   State<_PostCaptionSkeleton> createState() => _PostCaptionSkeletonState();
@@ -135,47 +156,63 @@ class _PostCaptionSkeletonState extends State<_PostCaptionSkeleton>
         return Opacity(opacity: _opacity.value, child: child);
       },
       child: Padding(
-        padding: const EdgeInsets.only(
-          left: 18.0,
-          right: 18.0,
-          top: 18.0,
-          bottom: 12.0,
-        ),
-        child: Row(
+        padding:
+            widget.padding ??
+            const EdgeInsets.only(
+              left: 18.0,
+              right: 18.0,
+              top: 18.0,
+              bottom: 12.0,
+            ),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: baseColor,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Container(
+                  width: 80,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: baseColor,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Container(
+                  width: 50,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: baseColor,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: widget.creatorToCaptionGap ?? 12.0),
             Container(
-              width: 46,
-              height: 46,
+              width: double.infinity,
+              height: 16,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
                 color: baseColor,
+                borderRadius: BorderRadius.circular(4),
               ),
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 6),
-                  Container(
-                    width: double.infinity,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: baseColor,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    width: 180,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: baseColor,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ],
+            const SizedBox(height: 8),
+            Container(
+              width: 220,
+              height: 16,
+              decoration: BoxDecoration(
+                color: baseColor,
+                borderRadius: BorderRadius.circular(4),
               ),
             ),
           ],

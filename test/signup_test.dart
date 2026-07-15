@@ -31,12 +31,8 @@ void main() {
 
   Widget createTestWidget() {
     return ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(testPrefs),
-      ],
-      child: const MaterialApp(
-        home: SignupScreen(),
-      ),
+      overrides: [sharedPreferencesProvider.overrideWithValue(testPrefs)],
+      child: const MaterialApp(home: SignupScreen()),
     );
   }
 
@@ -50,7 +46,9 @@ void main() {
   }
 
   group('Signup Screen Widget Tests', () {
-    testWidgets('1. Initial rendering of SignupScreen', (WidgetTester tester) async {
+    testWidgets('1. Initial rendering of SignupScreen', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -65,9 +63,15 @@ void main() {
 
       // Check text fields
       expect(find.byKey(const ValueKey('full_name_field')), findsOneWidget);
-      expect(find.byKey(const ValueKey('email_username_field')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('email_username_field')),
+        findsOneWidget,
+      );
       expect(find.byKey(const ValueKey('phone_field')), findsOneWidget);
-      expect(find.byKey(const ValueKey('signup_password_field')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('signup_password_field')),
+        findsOneWidget,
+      );
 
       // Check DOB and Terms components
       expect(find.byType(DateOfBirthSelector), findsOneWidget);
@@ -79,7 +83,9 @@ void main() {
       expect(find.byType(LoginRedirect), findsOneWidget);
     });
 
-    testWidgets('2. Field validation triggers error messages', (WidgetTester tester) async {
+    testWidgets('2. Field validation triggers error messages', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -94,19 +100,33 @@ void main() {
       expect(find.text('Email or username cannot be empty'), findsOneWidget);
       expect(find.text('Password cannot be empty'), findsOneWidget);
       expect(find.text('Please complete your Date of Birth'), findsOneWidget);
-      expect(find.text('You must agree to the Terms of Service'), findsOneWidget);
+      expect(
+        find.text('You must agree to the Terms of Service'),
+        findsOneWidget,
+      );
     });
 
-    testWidgets('3. Optional phone input validation', (WidgetTester tester) async {
+    testWidgets('3. Optional phone input validation', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
       // Enter details except phone (keep phone empty)
-      await tester.enterText(find.byKey(const ValueKey('full_name_field')), 'John Doe');
-      await tester.enterText(find.byKey(const ValueKey('email_username_field')), 'john@gmail.com');
-      await tester.enterText(find.byKey(const ValueKey('signup_password_field')), 'password123');
-      
+      await tester.enterText(
+        find.byKey(const ValueKey('full_name_field')),
+        'John Doe',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('email_username_field')),
+        'john@gmail.com',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('signup_password_field')),
+        'password123',
+      );
+
       // Submit and verify that phone does NOT have a validation error
       await tester.tap(find.byType(AuthPrimaryButton));
       await tester.pump();
@@ -119,13 +139,19 @@ void main() {
       expect(find.text('Please enter a valid phone number'), findsOneWidget);
     });
 
-    testWidgets('4. Password visibility toggle works correctly', (WidgetTester tester) async {
+    testWidgets('4. Password visibility toggle works correctly', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
-      final passwordFieldFinder = find.byKey(const ValueKey('signup_password_field'));
-      final passwordWidget = tester.widget<GlassAuthTextField>(passwordFieldFinder);
+      final passwordFieldFinder = find.byKey(
+        const ValueKey('signup_password_field'),
+      );
+      final passwordWidget = tester.widget<GlassAuthTextField>(
+        passwordFieldFinder,
+      );
       expect(passwordWidget.obscureText, isTrue);
 
       // Tap show password visibility toggle
@@ -135,11 +161,15 @@ void main() {
       await tester.pump();
 
       // Verify that obscureText is now false
-      final updatedPasswordWidget = tester.widget<GlassAuthTextField>(passwordFieldFinder);
+      final updatedPasswordWidget = tester.widget<GlassAuthTextField>(
+        passwordFieldFinder,
+      );
       expect(updatedPasswordWidget.obscureText, isFalse);
     });
 
-    testWidgets('5. DOB custom selector and underage validation', (WidgetTester tester) async {
+    testWidgets('5. DOB custom selector and underage validation', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -166,7 +196,7 @@ void main() {
       await tester.tap(find.text('YYYY'));
       await tester.pumpAndSettle();
       expect(find.text('Select Year'), findsOneWidget);
-      
+
       // Select underage year 2025
       await tester.tap(find.text('2025').first);
       await tester.pumpAndSettle();
@@ -174,13 +204,19 @@ void main() {
       // Scroll to primary button and submit
       final mainScrollable = find.byType(Scrollable).first;
       final ctaFinder = find.byType(AuthPrimaryButton);
-      await tester.scrollUntilVisible(ctaFinder, 50.0, scrollable: mainScrollable);
+      await tester.scrollUntilVisible(
+        ctaFinder,
+        50.0,
+        scrollable: mainScrollable,
+      );
       await tester.tap(ctaFinder);
       await tester.pump();
       expect(find.text('You must be at least 18 years old'), findsOneWidget);
     });
 
-    testWidgets('6. Terms checkbox toggles correctly', (WidgetTester tester) async {
+    testWidgets('6. Terms checkbox toggles correctly', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -192,11 +228,18 @@ void main() {
       await tester.scrollUntilVisible(ctaBtn, 50.0, scrollable: mainScrollable);
       await tester.tap(ctaBtn);
       await tester.pump();
-      expect(find.text('You must agree to the Terms of Service'), findsOneWidget);
+      expect(
+        find.text('You must agree to the Terms of Service'),
+        findsOneWidget,
+      );
 
       // Scroll to terms checkbox and check it
       final termsFinder = find.byType(TermsAgreementCheckbox);
-      await tester.scrollUntilVisible(termsFinder, 50.0, scrollable: mainScrollable);
+      await tester.scrollUntilVisible(
+        termsFinder,
+        50.0,
+        scrollable: mainScrollable,
+      );
       await tester.tap(termsFinder);
       await tester.pump();
 
@@ -206,7 +249,9 @@ void main() {
       expect(find.text('You must agree to the Terms of Service'), findsNothing);
     });
 
-    testWidgets('7. Signup loading state and successful home navigation', (WidgetTester tester) async {
+    testWidgets('7. Signup loading state and successful home navigation', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -214,9 +259,18 @@ void main() {
       final mainScrollable = find.byType(Scrollable).first;
 
       // Enter valid credentials
-      await tester.enterText(find.byKey(const ValueKey('full_name_field')), 'John Doe');
-      await tester.enterText(find.byKey(const ValueKey('email_username_field')), 'john@socialtree.com');
-      await tester.enterText(find.byKey(const ValueKey('signup_password_field')), 'password123');
+      await tester.enterText(
+        find.byKey(const ValueKey('full_name_field')),
+        'John Doe',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('email_username_field')),
+        'john@socialtree.com',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('signup_password_field')),
+        'password123',
+      );
 
       // Setup valid adult DOB: Day 01, Month 1 (Jan), Year 2000
       await tester.tap(find.text('DD'));
@@ -233,10 +287,12 @@ void main() {
       await tester.pumpAndSettle();
 
       // Scroll bottom sheet list to find year 2000
-      final listScrollable = find.descendant(
-        of: find.byType(ListView),
-        matching: find.byType(Scrollable),
-      ).first;
+      final listScrollable = find
+          .descendant(
+            of: find.byType(ListView),
+            matching: find.byType(Scrollable),
+          )
+          .first;
       await tester.scrollUntilVisible(
         find.text('2000'),
         100.0,
@@ -247,13 +303,21 @@ void main() {
 
       // Scroll to Terms and accept them
       final termsFinder = find.byType(TermsAgreementCheckbox);
-      await tester.scrollUntilVisible(termsFinder, 50.0, scrollable: mainScrollable);
+      await tester.scrollUntilVisible(
+        termsFinder,
+        50.0,
+        scrollable: mainScrollable,
+      );
       await tester.tap(termsFinder);
       await tester.pumpAndSettle();
 
       // Tap Create Account button
       final ctaFinder = find.byType(AuthPrimaryButton);
-      await tester.scrollUntilVisible(ctaFinder, 50.0, scrollable: mainScrollable);
+      await tester.scrollUntilVisible(
+        ctaFinder,
+        50.0,
+        scrollable: mainScrollable,
+      );
       await tester.tap(ctaFinder);
       await tester.pump(); // Enter loading state
 
@@ -263,7 +327,9 @@ void main() {
       // Settle simulated network call of 1500ms
       await tester.pump(const Duration(milliseconds: 1600));
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 1500)); // Transition to Home
+      await tester.pump(
+        const Duration(milliseconds: 1500),
+      ); // Transition to Home
 
       // Verify transition to Home screen
       expect(find.byType(SocialHomeScreen), findsOneWidget);
@@ -277,15 +343,21 @@ void main() {
       final mainScrollable = find.byType(Scrollable).first;
 
       final googleBtn = find.byWidgetPredicate(
-        (widget) => widget is SocialAuthButton && widget.provider == SocialProvider.google,
+        (widget) =>
+            widget is SocialAuthButton &&
+            widget.provider == SocialProvider.google,
       );
       expect(googleBtn, findsOneWidget);
 
       // Scroll to google button
-      await tester.scrollUntilVisible(googleBtn, 50.0, scrollable: mainScrollable);
+      await tester.scrollUntilVisible(
+        googleBtn,
+        50.0,
+        scrollable: mainScrollable,
+      );
       await tester.tap(googleBtn);
       await tester.pump(); // Start social signup loading
-      
+
       // Wait for mock duration
       await tester.pump(const Duration(milliseconds: 1300));
       await tester.pump();
@@ -294,15 +366,15 @@ void main() {
       expect(find.byType(SocialHomeScreen), findsOneWidget);
     });
 
-    testWidgets('9. Login Redirect pops navigation stack', (WidgetTester tester) async {
+    testWidgets('9. Login Redirect pops navigation stack', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
-      
+
       bool popped = false;
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(testPrefs),
-          ],
+          overrides: [sharedPreferencesProvider.overrideWithValue(testPrefs)],
           child: MaterialApp(
             home: Navigator(
               onPopPage: (route, result) {
@@ -323,16 +395,22 @@ void main() {
 
       final loginRedirect = find.byType(LoginRedirect);
       expect(loginRedirect, findsOneWidget);
-      
+
       // Scroll to login redirect link before tapping it
-      await tester.scrollUntilVisible(loginRedirect, 50.0, scrollable: mainScrollable);
+      await tester.scrollUntilVisible(
+        loginRedirect,
+        50.0,
+        scrollable: mainScrollable,
+      );
       await tester.tap(loginRedirect);
       await tester.pumpAndSettle();
 
       expect(popped, isTrue);
     });
 
-    testWidgets('10. Small viewport responsive safety', (WidgetTester tester) async {
+    testWidgets('10. Small viewport responsive safety', (
+      WidgetTester tester,
+    ) async {
       // Set small dimensions (320 x 720)
       setupViewport(tester, size: const Size(320, 720));
 
@@ -344,7 +422,9 @@ void main() {
       expect(find.byType(SignupScreen), findsOneWidget);
     });
 
-    testWidgets('11. 1.3x accessible text scaling safety', (WidgetTester tester) async {
+    testWidgets('11. 1.3x accessible text scaling safety', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
 
       await tester.pumpWidget(
@@ -360,15 +440,15 @@ void main() {
       expect(find.byType(SignupScreen), findsOneWidget);
     });
 
-    testWidgets('12. Top-left back button pops navigation stack', (WidgetTester tester) async {
+    testWidgets('12. Top-left back button pops navigation stack', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
 
       bool popped = false;
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(testPrefs),
-          ],
+          overrides: [sharedPreferencesProvider.overrideWithValue(testPrefs)],
           child: MaterialApp(
             home: Navigator(
               onPopPage: (route, result) {
@@ -440,12 +520,73 @@ class MockHttpHeaders implements HttpHeaders {
 
 class MockHttpClientResponse implements HttpClientResponse {
   static const List<int> _transparentImage = [
-    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
-    0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
-    0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00,
-    0x0A, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
-    0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49,
-    0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+    0x89,
+    0x50,
+    0x4E,
+    0x47,
+    0x0D,
+    0x0A,
+    0x1A,
+    0x0A,
+    0x00,
+    0x00,
+    0x00,
+    0x0D,
+    0x49,
+    0x48,
+    0x44,
+    0x52,
+    0x00,
+    0x00,
+    0x00,
+    0x01,
+    0x00,
+    0x00,
+    0x00,
+    0x01,
+    0x08,
+    0x06,
+    0x00,
+    0x00,
+    0x00,
+    0x1F,
+    0x15,
+    0xC4,
+    0x89,
+    0x00,
+    0x00,
+    0x00,
+    0x0A,
+    0x49,
+    0x44,
+    0x41,
+    0x54,
+    0x78,
+    0x9C,
+    0x63,
+    0x00,
+    0x01,
+    0x00,
+    0x00,
+    0x05,
+    0x00,
+    0x01,
+    0x0D,
+    0x0A,
+    0x2D,
+    0xB4,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x49,
+    0x45,
+    0x4E,
+    0x44,
+    0xAE,
+    0x42,
+    0x60,
+    0x82,
   ];
 
   @override

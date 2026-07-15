@@ -51,10 +51,14 @@ class _UploadMediaScreenState extends ConsumerState<UploadMediaScreen> {
 
           final lowerPath = file.path.toLowerCase();
           if (!lowerPath.endsWith('.mp4') && !lowerPath.endsWith('.mov')) {
-            throw Exception('Unsupported video format. Please select an MP4 or MOV video.');
+            throw Exception(
+              'Unsupported video format. Please select an MP4 or MOV video.',
+            );
           }
 
-          final persistentPath = await MediaHelper.handleSelectedPath(file.path);
+          final persistentPath = await MediaHelper.handleSelectedPath(
+            file.path,
+          );
 
           final factory = ref.read(videoPlayerControllerFactoryProvider);
           final tempController = factory.file(File(persistentPath));
@@ -71,9 +75,22 @@ class _UploadMediaScreenState extends ConsumerState<UploadMediaScreen> {
           // Generate a mock/placeholder thumbnail file in drafts
           final tempDir = Directory.systemTemp;
           final draftsDir = Directory('${tempDir.path}/dating_app_drafts');
-          final thumbnailPath = '${draftsDir.path}/draft_thumb_${DateTime.now().millisecondsSinceEpoch}.jpg';
+          final thumbnailPath =
+              '${draftsDir.path}/draft_thumb_${DateTime.now().millisecondsSinceEpoch}.jpg';
           final thumbFile = File(thumbnailPath);
-          await thumbFile.writeAsBytes([0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00]);
+          await thumbFile.writeAsBytes([
+            0xFF,
+            0xD8,
+            0xFF,
+            0xE0,
+            0x00,
+            0x10,
+            0x4A,
+            0x46,
+            0x49,
+            0x46,
+            0x00,
+          ]);
 
           final media = SelectedMedia(
             id: 'video_${DateTime.now().millisecondsSinceEpoch}',
@@ -92,7 +109,9 @@ class _UploadMediaScreenState extends ConsumerState<UploadMediaScreen> {
             throw Exception('Selected file does not exist.');
           }
 
-          final persistentPath = await MediaHelper.handleSelectedPath(file.path);
+          final persistentPath = await MediaHelper.handleSelectedPath(
+            file.path,
+          );
           final media = SelectedMedia(
             id: 'photo_${DateTime.now().millisecondsSinceEpoch}',
             path: persistentPath,
@@ -254,6 +273,7 @@ class _UploadMediaScreenState extends ConsumerState<UploadMediaScreen> {
                           behavior: SnackBarBehavior.floating,
                         ),
                       );
+                      Navigator.pop(context);
                     }
                   },
                 ),

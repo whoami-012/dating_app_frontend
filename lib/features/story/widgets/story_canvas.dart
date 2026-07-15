@@ -32,7 +32,12 @@ class DrawingLine {
   factory DrawingLine.fromJson(Map<String, dynamic> json) {
     final list = json['points'] as List<dynamic>;
     return DrawingLine(
-      points: list.map((p) => Offset((p['x'] as num).toDouble(), (p['y'] as num).toDouble())).toList(),
+      points: list
+          .map(
+            (p) =>
+                Offset((p['x'] as num).toDouble(), (p['y'] as num).toDouble()),
+          )
+          .toList(),
       color: Color(json['color'] as int),
       strokeWidth: (json['strokeWidth'] as num).toDouble(),
     );
@@ -126,7 +131,8 @@ class _StoryCanvasState extends ConsumerState<StoryCanvas> {
 
   Future<void> _initVideo() async {
     await _disposeVideo();
-    final isNetwork = widget.item.path.startsWith('http://') ||
+    final isNetwork =
+        widget.item.path.startsWith('http://') ||
         widget.item.path.startsWith('https://');
 
     _videoController = isNetwork
@@ -174,7 +180,8 @@ class _StoryCanvasState extends ConsumerState<StoryCanvas> {
 
     // Responsive sizing constraints (use parameters if provided, else fallback)
     final double computedHeight = widget.canvasHeight ?? (size.height * 0.5);
-    final double computedWidth = widget.canvasWidth ?? (computedHeight * 9 / 16);
+    final double computedWidth =
+        widget.canvasWidth ?? (computedHeight * 9 / 16);
 
     return Center(
       child: Container(
@@ -218,7 +225,10 @@ class _StoryCanvasState extends ConsumerState<StoryCanvas> {
               ),
 
               // 4. Overlays interactive layer
-              ...widget.item.overlays.map((o) => _buildInteractiveOverlay(o, computedWidth, computedHeight)),
+              ...widget.item.overlays.map(
+                (o) =>
+                    _buildInteractiveOverlay(o, computedWidth, computedHeight),
+              ),
 
               // 5. Drawing Gesture capture (visible only in drawing mode)
               if (activeTool == StoryTool.draw) _buildDrawingGestureOverlay(),
@@ -257,7 +267,8 @@ class _StoryCanvasState extends ConsumerState<StoryCanvas> {
               ),
 
               // 10. Trash area visible while dragging overlays
-              if (_draggingOverlayId != null) _buildTrashArea(computedWidth, computedHeight),
+              if (_draggingOverlayId != null)
+                _buildTrashArea(computedWidth, computedHeight),
             ],
           ),
         ),
@@ -301,26 +312,18 @@ class _StoryCanvasState extends ConsumerState<StoryCanvas> {
       } else {
         // Thumbnail placeholder
         return widget.item.thumbnailPath != null
-            ? Image.network(
-                widget.item.thumbnailPath!,
-                fit: BoxFit.cover,
-              )
+            ? Image.network(widget.item.thumbnailPath!, fit: BoxFit.cover)
             : const Center(
                 child: CircularProgressIndicator(color: Color(0xFFD1FF2F)),
               );
       }
     } else {
-      final isNetwork = widget.item.path.startsWith('http://') ||
+      final isNetwork =
+          widget.item.path.startsWith('http://') ||
           widget.item.path.startsWith('https://');
       return isNetwork
-          ? Image.network(
-              widget.item.path,
-              fit: BoxFit.cover,
-            )
-          : Image.file(
-              File(widget.item.path),
-              fit: BoxFit.cover,
-            );
+          ? Image.network(widget.item.path, fit: BoxFit.cover)
+          : Image.file(File(widget.item.path), fit: BoxFit.cover);
     }
   }
 
@@ -334,10 +337,26 @@ class _StoryCanvasState extends ConsumerState<StoryCanvas> {
       case 'grayscale':
         return const ColorFiltered(
           colorFilter: ColorFilter.matrix(<double>[
-            0.2126, 0.7152, 0.0722, 0, 0,
-            0.2126, 0.7152, 0.0722, 0, 0,
-            0.2126, 0.7152, 0.0722, 0, 0,
-            0,      0,      0,      1, 0,
+            0.2126,
+            0.7152,
+            0.0722,
+            0,
+            0,
+            0.2126,
+            0.7152,
+            0.0722,
+            0,
+            0,
+            0.2126,
+            0.7152,
+            0.0722,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
           ]),
           child: SizedBox.shrink(),
         );
@@ -359,16 +378,15 @@ class _StoryCanvasState extends ConsumerState<StoryCanvas> {
 
     return Container(
       color: filterColor,
-      child: Center(
-        child: Container(
-          color: Colors.transparent,
-        ),
-      ),
+      child: Center(child: Container(color: Colors.transparent)),
     );
   }
 
   Widget _buildInteractiveOverlay(
-      StoryOverlay overlay, double canvasWidth, double canvasHeight) {
+    StoryOverlay overlay,
+    double canvasWidth,
+    double canvasHeight,
+  ) {
     final activeTool = ref.watch(storyComposerProvider).activeTool;
     final isEditingText = activeTool == StoryTool.text;
 
@@ -398,7 +416,8 @@ class _StoryCanvasState extends ConsumerState<StoryCanvas> {
           final double trashCenterX = canvasWidth / 2;
           final double overlayCenterX = finalX + 50;
           final double overlayCenterY = finalY + 16;
-          final bool nearTrash = (overlayCenterX - trashCenterX).abs() < 40 &&
+          final bool nearTrash =
+              (overlayCenterX - trashCenterX).abs() < 40 &&
               (overlayCenterY - trashTop).abs() < 40;
 
           setState(() {
@@ -407,7 +426,9 @@ class _StoryCanvasState extends ConsumerState<StoryCanvas> {
             _isHoveringTrash = nearTrash;
           });
 
-          ref.read(storyComposerProvider.notifier).updateOverlay(
+          ref
+              .read(storyComposerProvider.notifier)
+              .updateOverlay(
                 overlay.copyWith(
                   x: finalX,
                   y: finalY,
@@ -432,7 +453,9 @@ class _StoryCanvasState extends ConsumerState<StoryCanvas> {
         onTap: () {
           if (overlay.type == StoryOverlayType.text) {
             // Re-edit text
-            ref.read(storyComposerProvider.notifier).setActiveTool(StoryTool.text);
+            ref
+                .read(storyComposerProvider.notifier)
+                .setActiveTool(StoryTool.text);
           }
         },
         child: Transform.rotate(
@@ -444,8 +467,8 @@ class _StoryCanvasState extends ConsumerState<StoryCanvas> {
               decoration: BoxDecoration(
                 color: overlay.textStyle == 'background'
                     ? (overlay.colorHex != null
-                        ? Color(int.parse(overlay.colorHex!))
-                        : Colors.black.withOpacity(0.7))
+                          ? Color(int.parse(overlay.colorHex!))
+                          : Colors.black.withOpacity(0.7))
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
@@ -462,8 +485,8 @@ class _StoryCanvasState extends ConsumerState<StoryCanvas> {
                         color: overlay.textStyle == 'background'
                             ? Colors.white
                             : (overlay.colorHex != null
-                                ? Color(int.parse(overlay.colorHex!))
-                                : Colors.white),
+                                  ? Color(int.parse(overlay.colorHex!))
+                                  : Colors.white),
                         fontSize: overlay.fontSize ?? 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -558,30 +581,42 @@ class _StoryCanvasState extends ConsumerState<StoryCanvas> {
               },
               child: const Text(
                 'Clear',
-                style: TextStyle(color: Colors.redAccent, fontSize: 13, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Colors.redAccent,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             // Minimal color selectors
-            ...[const Color(0xFFD1FF2F), Colors.white, Colors.redAccent, Colors.blueAccent]
-                .map((color) => GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _brushColor = color;
-                        });
-                      },
-                      child: Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: color,
-                          border: Border.all(
-                            color: _brushColor == color ? Colors.white : Colors.transparent,
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                    )),
+            ...[
+              const Color(0xFFD1FF2F),
+              Colors.white,
+              Colors.redAccent,
+              Colors.blueAccent,
+            ].map(
+              (color) => GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _brushColor = color;
+                  });
+                },
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: color,
+                    border: Border.all(
+                      color: _brushColor == color
+                          ? Colors.white
+                          : Colors.transparent,
+                      width: 1.5,
+                    ),
+                  ),
+                ),
+              ),
+            ),
             GestureDetector(
               onTap: () {
                 ref.read(storyComposerProvider.notifier).setActiveTool(null);
@@ -643,10 +678,14 @@ class _StoryCanvasState extends ConsumerState<StoryCanvas> {
           width: _isHoveringTrash ? 64 : 52,
           height: _isHoveringTrash ? 64 : 52,
           decoration: BoxDecoration(
-            color: _isHoveringTrash ? Colors.redAccent : Colors.black.withOpacity(0.85),
+            color: _isHoveringTrash
+                ? Colors.redAccent
+                : Colors.black.withOpacity(0.85),
             shape: BoxShape.circle,
             border: Border.all(
-              color: _isHoveringTrash ? Colors.transparent : Colors.white.withOpacity(0.24),
+              color: _isHoveringTrash
+                  ? Colors.transparent
+                  : Colors.white.withOpacity(0.24),
               width: 1.5,
             ),
           ),
@@ -666,15 +705,11 @@ class StoryDrawingPainter extends CustomPainter {
   final List<DrawingLine> lines;
   final DrawingLine? currentLine;
 
-  const StoryDrawingPainter({
-    required this.lines,
-    this.currentLine,
-  });
+  const StoryDrawingPainter({required this.lines, this.currentLine});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..strokeCap = StrokeCap.round;
+    final paint = Paint()..strokeCap = StrokeCap.round;
 
     for (final line in lines) {
       paint.color = line.color;
@@ -688,7 +723,11 @@ class StoryDrawingPainter extends CustomPainter {
       paint.color = currentLine!.color;
       paint.strokeWidth = currentLine!.strokeWidth;
       for (int i = 0; i < currentLine!.points.length - 1; i++) {
-        canvas.drawLine(currentLine!.points[i], currentLine!.points[i + 1], paint);
+        canvas.drawLine(
+          currentLine!.points[i],
+          currentLine!.points[i + 1],
+          paint,
+        );
       }
     }
   }

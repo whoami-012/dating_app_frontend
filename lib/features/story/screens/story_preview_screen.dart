@@ -13,10 +13,7 @@ import '../widgets/story_upload_progress.dart';
 class StoryPreviewScreen extends ConsumerStatefulWidget {
   final List<StoryMediaItem> items;
 
-  const StoryPreviewScreen({
-    super.key,
-    required this.items,
-  });
+  const StoryPreviewScreen({super.key, required this.items});
 
   @override
   ConsumerState<StoryPreviewScreen> createState() => _StoryPreviewScreenState();
@@ -50,7 +47,8 @@ class _StoryPreviewScreenState extends ConsumerState<StoryPreviewScreen> {
 
     if (!item.isVideo) return;
 
-    final isNetwork = item.path.startsWith('http://') || item.path.startsWith('https://');
+    final isNetwork =
+        item.path.startsWith('http://') || item.path.startsWith('https://');
     _videoController = isNetwork
         ? VideoPlayerController.networkUrl(Uri.parse(item.path))
         : VideoPlayerController.file(File(item.path));
@@ -136,8 +134,10 @@ class _StoryPreviewScreenState extends ConsumerState<StoryPreviewScreen> {
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  final double availableHeight = constraints.maxHeight - 16; // 16px safety margin
-                  final double availableWidth = constraints.maxWidth - 32; // 16px horizontal margins
+                  final double availableHeight =
+                      constraints.maxHeight - 16; // 16px safety margin
+                  final double availableWidth =
+                      constraints.maxWidth - 32; // 16px horizontal margins
 
                   double previewHeight = availableHeight;
                   double previewWidth = previewHeight * 9 / 16;
@@ -177,7 +177,9 @@ class _StoryPreviewScreenState extends ConsumerState<StoryPreviewScreen> {
                                     (index) => Container(
                                       width: 6,
                                       height: 6,
-                                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                                      margin: const EdgeInsets.symmetric(
+                                        horizontal: 3,
+                                      ),
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         color: _currentPageIndex == index
@@ -236,12 +238,20 @@ class _StoryPreviewScreenState extends ConsumerState<StoryPreviewScreen> {
                 shape: BoxShape.circle,
                 color: Colors.white.withOpacity(0.04),
               ),
-              child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
           const Text(
             'Preview Story',
-            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           GestureDetector(
             onTap: () async {
@@ -262,7 +272,11 @@ class _StoryPreviewScreenState extends ConsumerState<StoryPreviewScreen> {
               alignment: Alignment.center,
               child: const Text(
                 'Save Draft',
-                style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -278,13 +292,17 @@ class _StoryPreviewScreenState extends ConsumerState<StoryPreviewScreen> {
         // Media content
         item.isVideo
             ? (_isVideoInitialized && _videoController != null
-                ? VideoPlayer(_videoController!)
-                : (item.thumbnailPath != null
-                    ? Image.network(item.thumbnailPath!, fit: BoxFit.cover)
-                    : const Center(child: CircularProgressIndicator(color: Color(0xFFD1FF2F)))))
+                  ? VideoPlayer(_videoController!)
+                  : (item.thumbnailPath != null
+                        ? Image.network(item.thumbnailPath!, fit: BoxFit.cover)
+                        : const Center(
+                            child: CircularProgressIndicator(
+                              color: Color(0xFFD1FF2F),
+                            ),
+                          )))
             : (item.path.startsWith('http')
-                ? Image.network(item.path, fit: BoxFit.cover)
-                : Image.file(File(item.path), fit: BoxFit.cover)),
+                  ? Image.network(item.path, fit: BoxFit.cover)
+                  : Image.file(File(item.path), fit: BoxFit.cover)),
 
         // Filter color
         _buildAppliedFilter(item.filter),
@@ -305,11 +323,19 @@ class _StoryPreviewScreenState extends ConsumerState<StoryPreviewScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.music_note, color: Color(0xFFD1FF2F), size: 12),
+                  const Icon(
+                    Icons.music_note,
+                    color: Color(0xFFD1FF2F),
+                    size: 12,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     '${item.music!.title} - ${item.music!.artist}',
-                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
@@ -324,10 +350,26 @@ class _StoryPreviewScreenState extends ConsumerState<StoryPreviewScreen> {
     if (filter == 'grayscale') {
       return const ColorFiltered(
         colorFilter: ColorFilter.matrix(<double>[
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0,      0,      0,      1, 0,
+          0.2126,
+          0.7152,
+          0.0722,
+          0,
+          0,
+          0.2126,
+          0.7152,
+          0.0722,
+          0,
+          0,
+          0.2126,
+          0.7152,
+          0.0722,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
         ]),
         child: SizedBox.shrink(),
       );
@@ -345,9 +387,7 @@ class _StoryPreviewScreenState extends ConsumerState<StoryPreviewScreen> {
     }
     return Container(
       color: c,
-      child: Center(
-        child: Container(color: Colors.transparent),
-      ),
+      child: Center(child: Container(color: Colors.transparent)),
     );
   }
 
@@ -363,7 +403,9 @@ class _StoryPreviewScreenState extends ConsumerState<StoryPreviewScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: o.textStyle == 'background'
-                  ? (o.colorHex != null ? Color(int.parse(o.colorHex!)) : Colors.black.withOpacity(0.8))
+                  ? (o.colorHex != null
+                        ? Color(int.parse(o.colorHex!))
+                        : Colors.black.withOpacity(0.8))
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(6),
             ),
@@ -373,12 +415,17 @@ class _StoryPreviewScreenState extends ConsumerState<StoryPreviewScreen> {
                     style: TextStyle(
                       color: o.textStyle == 'background'
                           ? Colors.white
-                          : (o.colorHex != null ? Color(int.parse(o.colorHex!)) : Colors.white),
+                          : (o.colorHex != null
+                                ? Color(int.parse(o.colorHex!))
+                                : Colors.white),
                       fontSize: o.fontSize ?? 14,
                       fontWeight: FontWeight.bold,
                     ),
                   )
-                : Text(o.stickerPath ?? '', style: const TextStyle(fontSize: 28)),
+                : Text(
+                    o.stickerPath ?? '',
+                    style: const TextStyle(fontSize: 28),
+                  ),
           ),
         ),
       ),
@@ -422,14 +469,26 @@ class _StoryPreviewScreenState extends ConsumerState<StoryPreviewScreen> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.people_outline_rounded, color: Color(0xFFD1FF2F), size: 18),
+            const Icon(
+              Icons.people_outline_rounded,
+              color: Color(0xFFD1FF2F),
+              size: 18,
+            ),
             const SizedBox(width: 8),
             Text(
               'Audience: $_selectedAudience',
-              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(width: 4),
-            const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.grey, size: 16),
+            const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: Colors.grey,
+              size: 16,
+            ),
           ],
         ),
       ),
@@ -461,7 +520,14 @@ class _StoryPreviewScreenState extends ConsumerState<StoryPreviewScreen> {
               ref.read(storyUploadProvider.notifier).clearError();
               _handleShare();
             },
-            child: const Text('Retry', style: TextStyle(color: Color(0xFFD1FF2F), fontWeight: FontWeight.bold, fontSize: 12)),
+            child: const Text(
+              'Retry',
+              style: TextStyle(
+                color: Color(0xFFD1FF2F),
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
           ),
         ],
       ),

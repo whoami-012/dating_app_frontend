@@ -4,8 +4,9 @@ import 'package:flutter/services.dart';
 import '../models/selected_media.dart';
 
 class MediaHelper {
-  static const MethodChannel _channel =
-      MethodChannel('com.socialtree.dating_app_mobile/media_helper');
+  static const MethodChannel _channel = MethodChannel(
+    'com.socialtree.dating_app_mobile/media_helper',
+  );
 
   /// Detects if a path is a local video path or a remote video URL
   static bool isRemoteUrl(String path) {
@@ -45,12 +46,15 @@ class MediaHelper {
         if (!await draftsDir.exists()) {
           await draftsDir.create(recursive: true);
         }
-        
+
         final fileName = localPath.split(Platform.pathSeparator).last;
         final timestamp = DateTime.now().millisecondsSinceEpoch;
-        final extension = fileName.contains('.') ? fileName.split('.').last : 'mp4';
-        
-        final targetPath = '${draftsDir.path}/draft_media_${timestamp}_$fileName';
+        final extension = fileName.contains('.')
+            ? fileName.split('.').last
+            : 'mp4';
+
+        final targetPath =
+            '${draftsDir.path}/draft_media_${timestamp}_$fileName';
         final copiedFile = await file.copy(targetPath);
         return copiedFile.path;
       }

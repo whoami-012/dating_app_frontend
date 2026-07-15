@@ -40,6 +40,47 @@ final homeProvider = NotifierProvider<HomeNotifier, HomeState>(
 );
 
 class HomeNotifier extends Notifier<HomeState> {
+  final List<FeedPost> _addedPosts = [];
+  int _refreshCount = 0;
+
+  final List<FeedPost> _dynamicSamplePosts = [
+    const FeedPost(
+      id: 'post_new_1',
+      author: 'Ricky kin..',
+      authorAvatarUrl:
+          'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=200&auto=format&fit=crop',
+      mediaUrl:
+          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1000&auto=format&fit=crop',
+      isLive: false,
+      viewerCount: '12.4K',
+      likeCount: 1200,
+      commentCount: 98,
+      shareCount: 45,
+      bookmarkCount: 340,
+      caption:
+          "Cyberpunk night vibes in downtown. The neon lights here hit different...",
+      isLiked: false,
+      isBookmarked: false,
+    ),
+    const FeedPost(
+      id: 'post_new_2',
+      author: 'Mujotha',
+      authorAvatarUrl:
+          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop',
+      mediaUrl:
+          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop',
+      isLive: false,
+      viewerCount: '5.2K',
+      likeCount: 430,
+      commentCount: 24,
+      shareCount: 12,
+      bookmarkCount: 88,
+      caption: "Chasing the golden hour. A perfect ending to a busy week.",
+      isLiked: false,
+      isBookmarked: false,
+    ),
+  ];
+
   @override
   HomeState build() {
     final isTest = Platform.environment.containsKey('FLUTTER_TEST');
@@ -148,13 +189,31 @@ class HomeNotifier extends Notifier<HomeState> {
     state = state.copyWith(isLoading: true, isError: false);
     try {
       await Future.delayed(const Duration(milliseconds: 1000));
+      _refreshCount++;
+      
+      final List<FeedPost> loadedPosts = List.from(_samplePosts);
+      // Dynamically add a new post based on refresh count to simulate new feed updates
+      if (_refreshCount == 1 && _dynamicSamplePosts.isNotEmpty) {
+        loadedPosts.insert(0, _dynamicSamplePosts[0]);
+      } else if (_refreshCount >= 2 && _dynamicSamplePosts.length >= 2) {
+        loadedPosts.insert(0, _dynamicSamplePosts[0]);
+        loadedPosts.insert(0, _dynamicSamplePosts[1]);
+      }
+
       // Reset likes and bookmarks on refresh for demonstration
-      final refreshedPosts = _samplePosts
+      final refreshedPosts = loadedPosts
           .map((p) => p.copyWith(isLiked: false, isBookmarked: false))
           .toList();
+
+      // Merge user created/added posts with refreshed posts
+      final allPosts = [
+        ..._addedPosts,
+        ...refreshedPosts.where((p) => !_addedPosts.any((ap) => ap.id == p.id))
+      ];
+
       state = HomeState(
         stories: _sampleStories,
-        posts: refreshedPosts,
+        posts: allPosts,
         isLoading: false,
       );
     } catch (e) {
@@ -198,6 +257,22 @@ class HomeNotifier extends Notifier<HomeState> {
     );
   }
 
+  void notInterested(String postId) {
+    state = state.copyWith(
+      posts: state.posts.where((post) => post.id != postId).toList(),
+    );
+  }
+
+  void insertPostAt(int index, FeedPost post) {
+    final updatedPosts = List<FeedPost>.from(state.posts);
+    if (index >= 0 && index <= updatedPosts.length) {
+      updatedPosts.insert(index, post);
+    } else {
+      updatedPosts.add(post);
+    }
+    state = state.copyWith(posts: updatedPosts);
+  }
+
   void triggerErrorState() {
     state = state.copyWith(
       isLoading: false,
@@ -211,7 +286,12 @@ class HomeNotifier extends Notifier<HomeState> {
   }
 
   void addPost(FeedPost post) {
-    state = state.copyWith(posts: [post, ...state.posts]);
+    if (!_addedPosts.any((p) => p.id == post.id)) {
+      _addedPosts.insert(0, post);
+    }
+    state = state.copyWith(
+      posts: [post, ...state.posts.where((p) => p.id != post.id)],
+    );
   }
 
   void addStory(Story story) {

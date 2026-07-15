@@ -31,16 +31,16 @@ void main() {
 
   Widget createTestWidget() {
     return ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(testPrefs),
-      ],
-      child: const MaterialApp(
-        home: UploadMediaScreen(),
-      ),
+      overrides: [sharedPreferencesProvider.overrideWithValue(testPrefs)],
+      child: const MaterialApp(home: UploadMediaScreen()),
     );
   }
 
-  void setupViewport(WidgetTester tester, {double width = 800, double height = 1200}) {
+  void setupViewport(
+    WidgetTester tester, {
+    double width = 800,
+    double height = 1200,
+  }) {
     tester.view.physicalSize = Size(width, height);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
@@ -50,7 +50,9 @@ void main() {
   }
 
   group('Upload Media Screen Widget Tests', () {
-    testWidgets('1. Initial rendering and empty state', (WidgetTester tester) async {
+    testWidgets('1. Initial rendering and empty state', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -65,7 +67,10 @@ void main() {
       expect(find.byType(AddMoreMediaCard), findsOneWidget);
 
       // Check that the limit helper text is visible
-      expect(find.textContaining('You can add up to 10 photos or 1 video'), findsOneWidget);
+      expect(
+        find.textContaining('You can add up to 10 photos or 1 video'),
+        findsOneWidget,
+      );
 
       // Check caption input elements
       expect(find.text('Write a caption'), findsOneWidget);
@@ -82,7 +87,9 @@ void main() {
       expect(find.text('Advanced Settings'), findsOneWidget);
 
       // Verify that primary upload CTA is disabled when there's no media
-      final uploadBtn = tester.widget<UploadPrimaryButton>(find.byType(UploadPrimaryButton));
+      final uploadBtn = tester.widget<UploadPrimaryButton>(
+        find.byType(UploadPrimaryButton),
+      );
       expect(uploadBtn.isEnabled, isFalse);
     });
 
@@ -91,12 +98,20 @@ void main() {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
-      final container = ProviderScope.containerOf(tester.element(find.byType(UploadMediaScreen)));
-      
-      // Directly add media via the provider state to simulate picker success
-      container.read(uploadPostProvider.notifier).addMedia(
-        const SelectedMedia(id: 'photo_test_1', path: 'photo_test_path', isVideo: false),
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(UploadMediaScreen)),
       );
+
+      // Directly add media via the provider state to simulate picker success
+      container
+          .read(uploadPostProvider.notifier)
+          .addMedia(
+            const SelectedMedia(
+              id: 'photo_test_1',
+              path: 'photo_test_path',
+              isVideo: false,
+            ),
+          );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -104,7 +119,9 @@ void main() {
       expect(find.byType(MediaPreviewCard), findsOneWidget);
 
       // Verify button is now enabled
-      final uploadBtn = tester.widget<UploadPrimaryButton>(find.byType(UploadPrimaryButton));
+      final uploadBtn = tester.widget<UploadPrimaryButton>(
+        find.byType(UploadPrimaryButton),
+      );
       expect(uploadBtn.isEnabled, isTrue);
 
       // Tap remove overlay button on the card
@@ -126,17 +143,23 @@ void main() {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
-      final container = ProviderScope.containerOf(tester.element(find.byType(UploadMediaScreen)));
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(UploadMediaScreen)),
+      );
       final notifier = container.read(uploadPostProvider.notifier);
 
       // Add 10 photos
       for (int i = 0; i < 10; i++) {
-        notifier.addMedia(SelectedMedia(id: 'photo_$i', path: 'path_$i', isVideo: false));
+        notifier.addMedia(
+          SelectedMedia(id: 'photo_$i', path: 'path_$i', isVideo: false),
+        );
       }
       await tester.pumpAndSettle();
 
       // Try to add the 11th photo
-      notifier.addMedia(const SelectedMedia(id: 'photo_11', path: 'path_11', isVideo: false));
+      notifier.addMedia(
+        const SelectedMedia(id: 'photo_11', path: 'path_11', isVideo: false),
+      );
       await tester.pump();
 
       // Verify state has validation error
@@ -149,21 +172,28 @@ void main() {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
-      final container = ProviderScope.containerOf(tester.element(find.byType(UploadMediaScreen)));
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(UploadMediaScreen)),
+      );
       final notifier = container.read(uploadPostProvider.notifier);
 
       // Add long video (>60 seconds)
-      notifier.addMedia(const SelectedMedia(
-        id: 'long_vid',
-        path: 'vid_path',
-        isVideo: true,
-        duration: Duration(seconds: 75),
-      ));
+      notifier.addMedia(
+        const SelectedMedia(
+          id: 'long_vid',
+          path: 'vid_path',
+          isVideo: true,
+          duration: Duration(seconds: 75),
+        ),
+      );
       await tester.pump();
 
       // Verify error message is set
       final state = container.read(uploadPostProvider);
-      expect(state.errorMessage, equals('Video exceeds maximum duration of 60 seconds.'));
+      expect(
+        state.errorMessage,
+        equals('Video exceeds maximum duration of 60 seconds.'),
+      );
     });
 
     testWidgets('5. Caption counter updates', (WidgetTester tester) async {
@@ -193,7 +223,9 @@ void main() {
       await tester.pump();
 
       // Verify in provider that tag is selected
-      final container = ProviderScope.containerOf(tester.element(find.byType(UploadMediaScreen)));
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(UploadMediaScreen)),
+      );
       expect(container.read(uploadPostProvider).tags, contains('Adventure'));
     });
 
@@ -214,17 +246,23 @@ void main() {
       expect(find.text('Everyone'), findsOneWidget);
     });
 
-    testWidgets('8. Upload progress and loading states', (WidgetTester tester) async {
+    testWidgets('8. Upload progress and loading states', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
-      final container = ProviderScope.containerOf(tester.element(find.byType(UploadMediaScreen)));
-      
-      // Add media so button is enabled
-      container.read(uploadPostProvider.notifier).addMedia(
-        const SelectedMedia(id: 'photo_test', path: 'path', isVideo: false),
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(UploadMediaScreen)),
       );
+
+      // Add media so button is enabled
+      container
+          .read(uploadPostProvider.notifier)
+          .addMedia(
+            const SelectedMedia(id: 'photo_test', path: 'path', isVideo: false),
+          );
       await tester.pumpAndSettle();
 
       // Click upload CTA
@@ -233,7 +271,7 @@ void main() {
 
       // Verify progress indicators are shown
       expect(find.textContaining('Uploading'), findsWidgets);
-      
+
       // Complete mock uploading
       await tester.pump(const Duration(seconds: 2));
       await tester.pumpAndSettle();
@@ -247,13 +285,19 @@ void main() {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
-      final container = ProviderScope.containerOf(tester.element(find.byType(UploadMediaScreen)));
-      container.read(uploadPostProvider.notifier).addMedia(
-        const SelectedMedia(id: 'photo_test', path: 'path', isVideo: false),
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(UploadMediaScreen)),
       );
-      
+      container
+          .read(uploadPostProvider.notifier)
+          .addMedia(
+            const SelectedMedia(id: 'photo_test', path: 'path', isVideo: false),
+          );
+
       // Set caption to trigger failure simulation
-      container.read(uploadPostProvider.notifier).updateCaption('trigger failure');
+      container
+          .read(uploadPostProvider.notifier)
+          .updateCaption('trigger failure');
       await tester.pumpAndSettle();
 
       // Tap Upload CTA
@@ -264,10 +308,16 @@ void main() {
 
       // Verify error banner is visible
       expect(find.byType(UploadErrorBanner), findsOneWidget);
-      expect(find.textContaining('Network connection timed out'), findsOneWidget);
+      expect(
+        find.textContaining('Network connection timed out'),
+        findsOneWidget,
+      );
 
       // Verify state is failure
-      expect(container.read(uploadPostProvider).status, equals(UploadStatus.failure));
+      expect(
+        container.read(uploadPostProvider).status,
+        equals(UploadStatus.failure),
+      );
 
       // Dismiss banner first
       await tester.tap(
@@ -289,7 +339,10 @@ void main() {
       // Tap Retry Upload button
       await tester.tap(find.text('Retry Upload'));
       await tester.pump();
-      expect(container.read(uploadPostProvider).status, equals(UploadStatus.uploading));
+      expect(
+        container.read(uploadPostProvider).status,
+        equals(UploadStatus.uploading),
+      );
 
       // Resolve the retried upload (fails again)
       await tester.pump(const Duration(seconds: 2));
@@ -367,12 +420,73 @@ class _MockHttpHeaders implements HttpHeaders {
 
 class _MockHttpClientResponse implements HttpClientResponse {
   static const List<int> _imageBytes = [
-    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
-    0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
-    0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00,
-    0x0A, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
-    0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49,
-    0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+    0x89,
+    0x50,
+    0x4E,
+    0x47,
+    0x0D,
+    0x0A,
+    0x1A,
+    0x0A,
+    0x00,
+    0x00,
+    0x00,
+    0x0D,
+    0x49,
+    0x48,
+    0x44,
+    0x52,
+    0x00,
+    0x00,
+    0x00,
+    0x01,
+    0x00,
+    0x00,
+    0x00,
+    0x01,
+    0x08,
+    0x06,
+    0x00,
+    0x00,
+    0x00,
+    0x1F,
+    0x15,
+    0xC4,
+    0x89,
+    0x00,
+    0x00,
+    0x00,
+    0x0A,
+    0x49,
+    0x44,
+    0x41,
+    0x54,
+    0x78,
+    0x9C,
+    0x63,
+    0x00,
+    0x01,
+    0x00,
+    0x00,
+    0x05,
+    0x00,
+    0x01,
+    0x0D,
+    0x0A,
+    0x2D,
+    0xB4,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x49,
+    0x45,
+    0x4E,
+    0x44,
+    0xAE,
+    0x42,
+    0x60,
+    0x82,
   ];
 
   @override

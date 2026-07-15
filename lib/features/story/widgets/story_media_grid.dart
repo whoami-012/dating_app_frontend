@@ -59,16 +59,10 @@ class StoryMediaGrid extends StatelessWidget {
         separatorBuilder: (context, index) => const SizedBox(height: 8),
         itemBuilder: (context, index) {
           if (index == 0) {
-            return SizedBox(
-              height: 70,
-              child: _buildCameraTile(),
-            );
+            return SizedBox(height: 70, child: _buildCameraTile());
           }
           final media = mediaItems[index - 1];
-          return SizedBox(
-            height: 70,
-            child: _buildMediaTile(media),
-          );
+          return SizedBox(height: 70, child: _buildMediaTile(media));
         },
       );
     }
@@ -84,9 +78,7 @@ class StoryMediaGrid extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFF18191D),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.08),
-            ),
+            border: Border.all(color: Colors.white.withOpacity(0.08)),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -113,7 +105,9 @@ class StoryMediaGrid extends StatelessWidget {
   }
 
   Widget _buildMediaTile(GalleryMedia media) {
-    final selectedIndex = selectedItems.indexWhere((item) => item.path == media.path);
+    final selectedIndex = selectedItems.indexWhere(
+      (item) => item.path == media.path,
+    );
     final isSelected = selectedIndex >= 0;
 
     return Semantics(
@@ -140,9 +134,7 @@ class StoryMediaGrid extends StatelessWidget {
 
                 // Selection dark overlay
                 if (isSelected)
-                  Container(
-                    color: Colors.black.withOpacity(0.35),
-                  ),
+                  Container(color: Colors.black.withOpacity(0.35)),
 
                 // Video indicators
                 if (media.isVideo) ...[
@@ -150,7 +142,10 @@ class StoryMediaGrid extends StatelessWidget {
                     bottom: 6,
                     left: 6,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.black.withOpacity(0.65),
                         borderRadius: BorderRadius.circular(8),
@@ -194,7 +189,9 @@ class StoryMediaGrid extends StatelessWidget {
   }
 
   Widget _buildThumbnailImage(GalleryMedia media) {
-    final path = media.isVideo ? (media.thumbnailPath ?? media.path) : media.path;
+    final path = media.isVideo
+        ? (media.thumbnailPath ?? media.path)
+        : media.path;
     final isNetwork = path.startsWith('http://') || path.startsWith('https://');
 
     if (isNetwork) {
@@ -229,10 +226,7 @@ class StoryMediaGrid extends StatelessWidget {
         ),
       );
     } else {
-      return Image.file(
-        File(path),
-        fit: BoxFit.cover,
-      );
+      return Image.file(File(path), fit: BoxFit.cover);
     }
   }
 

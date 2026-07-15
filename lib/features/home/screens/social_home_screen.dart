@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,8 +11,10 @@ import '../widgets/live_post_card.dart';
 import '../widgets/engagement_bar.dart';
 import '../widgets/post_caption.dart';
 import '../widgets/floating_app_navigation.dart';
+import '../widgets/matches_view.dart';
 import '../../media_upload/screens/upload_media_screen.dart';
 import '../../story/screens/story_composer_screen.dart';
+import '../../profile/screens/other_user_profile_screen.dart';
 
 class SocialHomeScreen extends ConsumerStatefulWidget {
   const SocialHomeScreen({super.key});
@@ -37,13 +40,23 @@ class _SocialHomeScreenState extends ConsumerState<SocialHomeScreen> {
         ? AppColors.darkSecondaryText
         : AppColors.lightSecondaryText;
 
-    const navigationHeight = 90.0;
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final mediaQuery = MediaQuery.of(context);
+    final isShort = screenHeight < 820;
+    final headerToMediaGap = isShort ? 16.0 : 24.0;
+
+    const navigationHeight = 88.0;
     const navigationBottomGap = 12.0;
+    const minimumActionNavGap = 16.0;
+
+    final navTop =
+        mediaQuery.size.height -
+        mediaQuery.padding.bottom -
+        navigationBottomGap -
+        navigationHeight;
+
     final scrollBottomPadding =
-        navigationHeight +
-        MediaQuery.paddingOf(context).bottom +
-        navigationBottomGap +
-        24;
+        navigationHeight + mediaQuery.padding.bottom + navigationBottomGap + 24;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
@@ -57,8 +70,10 @@ class _SocialHomeScreenState extends ConsumerState<SocialHomeScreen> {
           children: [
             // Scrollable Feed Content
             Positioned.fill(
-              child: RefreshIndicator(
-                color: AppColors.neonLime,
+              child: _currentNavIndex == 3
+                  ? const MatchesView()
+                  : RefreshIndicator(
+                      color: AppColors.neonLime,
                 backgroundColor: isDark
                     ? AppColors.darkSurface
                     : AppColors.lightSurface,
@@ -72,79 +87,47 @@ class _SocialHomeScreenState extends ConsumerState<SocialHomeScreen> {
                     ),
                     slivers: [
                       // 1. Header
-                      const SliverToBoxAdapter(child: HomeHeader()),
-                      const SliverToBoxAdapter(child: SizedBox(height: 10)),
-
-                      // 2. Stories Row
-                      SliverToBoxAdapter(
-                        child: StoriesList(
-                          stories: homeState.stories,
-                          isLoading:
-                              homeState.isLoading && homeState.stories.isEmpty,
-                          onStoryTap: (story) {
-                            if (story.isCurrentUser) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const StoryComposerScreen(),
-                                ),
-                              );
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Opening ${story.username}\'s story...',
-                                  ),
-                                  duration: const Duration(seconds: 1),
-                                ),
-                              );
-                            }
-                          },
+                      const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 12),
+                          child: HomeHeader(),
                         ),
                       ),
-                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                      SliverToBoxAdapter(
+                        child: SizedBox(height: headerToMediaGap),
+                      ),
 
                       // Check for Error State
                       if (homeState.isError)
                         SliverFillRemaining(
                           hasScrollBody: false,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 40.0,
-                            ),
-                            child: Center(
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24.0,
+                              ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(
-                                    Icons.wifi_off_rounded,
-                                    size: 64,
-                                    color: AppColors.liveRed,
+                                  Icon(
+                                    Icons.error_outline_rounded,
+                                    color: isDark
+                                        ? AppColors.darkMutedText
+                                        : AppColors.lightMutedText,
+                                    size: 48,
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
                                     homeState.errorMessage ??
-                                        'An error occurred',
-                                    style: AppTypography.getCaption(
-                                      primaryText,
-                                    ),
+                                        'Something went wrong',
                                     textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: 20),
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.neonLime,
-                                      foregroundColor: Colors.black,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 24,
-                                        vertical: 12,
-                                      ),
+                                    style: AppTypography.getCaption(
+                                      secondaryText,
                                     ),
-                                    onPressed: () =>
-                                        homeNotifier.loadInitialData(),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  ElevatedButton(
+                                    onPressed: () => homeNotifier.refreshFeed(),
                                     child: const Text('Try Again'),
                                   ),
                                 ],
@@ -156,36 +139,37 @@ class _SocialHomeScreenState extends ConsumerState<SocialHomeScreen> {
                       else if (!homeState.isLoading && homeState.posts.isEmpty)
                         SliverFillRemaining(
                           hasScrollBody: false,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 40.0,
-                            ),
-                            child: Center(
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24.0,
+                              ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.feed_outlined,
-                                    size: 64,
-                                    color: AppColors.gemBlue,
+                                    color: isDark
+                                        ? AppColors.darkMutedText
+                                        : AppColors.lightMutedText,
+                                    size: 48,
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
-                                    'No updates in your circle right now.',
+                                    'No posts found.',
                                     style: AppTypography.getUsername(
                                       primaryText,
                                     ),
-                                    textAlign: TextAlign.center,
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    'Pull down to refresh or follow more creators.',
+                                    'Pull down to refresh or reset details.',
+                                    textAlign: TextAlign.center,
                                     style: AppTypography.getCaption(
                                       secondaryText,
                                     ),
-                                    textAlign: TextAlign.center,
                                   ),
-                                  const SizedBox(height: 20),
+                                  const SizedBox(height: 16),
                                   TextButton(
                                     onPressed: () =>
                                         homeNotifier.loadInitialData(),
@@ -205,7 +189,7 @@ class _SocialHomeScreenState extends ConsumerState<SocialHomeScreen> {
                       else
                         SliverList(
                           delegate: SliverChildBuilderDelegate(
-                            (context, index) {
+                            (itemContext, index) {
                               // Handle initial skeleton loading when posts lists are empty
                               final isSkeleton =
                                   homeState.isLoading &&
@@ -214,114 +198,176 @@ class _SocialHomeScreenState extends ConsumerState<SocialHomeScreen> {
                                   ? null
                                   : homeState.posts[index];
 
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // 3. Main Live Content Card
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 18,
-                                    ),
-                                    child: AspectRatio(
-                                      aspectRatio: 0.96,
-                                      child: LivePostCard(
+                              final mediaToCreatorGap = isShort ? 14.0 : 18.0;
+                              final creatorToCaptionGap = isShort ? 8.0 : 12.0;
+                              final captionToActionsGap = isShort ? 16.0 : 24.0;
+
+                              final mediaAspectRatio = switch (screenHeight) {
+                                < 760 => 1.02,
+                                < 820 => 0.96,
+                                < 880 => 0.92,
+                                _ => 0.86,
+                              };
+
+                              final contentStartY =
+                                  mediaQuery.padding.top +
+                                  12.0 +
+                                  48.0 +
+                                  headerToMediaGap;
+                              const creatorSectionHeight = 46.0;
+                              const captionSectionHeight = 36.0;
+                              const actionSectionHeight = 56.0;
+                              final reservedSpacing =
+                                  mediaToCreatorGap +
+                                  creatorToCaptionGap +
+                                  captionToActionsGap +
+                                  minimumActionNavGap;
+
+                              return LayoutBuilder(
+                                builder: (layoutContext, constraints) {
+                                  final mediaWidth =
+                                      constraints.maxWidth - 36.0;
+                                  final ratioHeight =
+                                      mediaWidth / mediaAspectRatio;
+
+                                  final availableMediaHeight =
+                                      navTop -
+                                      contentStartY -
+                                      creatorSectionHeight -
+                                      captionSectionHeight -
+                                      actionSectionHeight -
+                                      reservedSpacing;
+
+                                  final mediaHeight = min(
+                                    ratioHeight,
+                                    availableMediaHeight,
+                                  );
+
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // 3. Main Media Content Card
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 18,
+                                        ),
+                                        child: SizedBox(
+                                          width: mediaWidth,
+                                          height: mediaHeight,
+                                          child: LivePostCard(
+                                            post: post,
+                                            isLoading: isSkeleton,
+                                            onDoubleTap: () {
+                                              if (post != null) {
+                                                homeNotifier.toggleLike(
+                                                  post.id,
+                                                );
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      post.isLiked
+                                                          ? 'Unliked post'
+                                                          : 'Liked post!',
+                                                    ),
+                                                    duration: const Duration(
+                                                      milliseconds: 700,
+                                                    ),
+                                                    backgroundColor:
+                                                        AppColors.liveRed,
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                          ),
+                                        ),
+                                      ),
+
+                                      // 4. Creator Row & Caption
+                                      PostCaption(
                                         post: post,
                                         isLoading: isSkeleton,
-                                        onDoubleTap: () {
+                                        padding: EdgeInsets.only(
+                                          left: 18.0,
+                                          right: 18.0,
+                                          top: mediaToCreatorGap,
+                                          bottom: 0.0,
+                                        ),
+                                        creatorToCaptionGap:
+                                            creatorToCaptionGap,
+                                        onTap: () {
                                           if (post != null) {
-                                            homeNotifier.toggleLike(post.id);
-                                            ScaffoldMessenger.of(
+                                            Navigator.push(
                                               context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  post.isLiked
-                                                      ? 'Unliked post'
-                                                      : 'Liked post!',
-                                                ),
-                                                duration: const Duration(
-                                                  milliseconds: 700,
-                                                ),
-                                                backgroundColor:
-                                                    AppColors.liveRed,
+                                              MaterialPageRoute(
+                                                builder: (context) => const OtherUserProfileScreen(),
                                               ),
                                             );
                                           }
                                         },
                                       ),
-                                    ),
-                                  ),
 
-                                  // 4. Engagement Controls Row
-                                  EngagementBar(
-                                    post: post,
-                                    isLoading: isSkeleton,
-                                    onLikeTap: () {
-                                      if (post != null)
-                                        homeNotifier.toggleLike(post.id);
-                                    },
-                                    onBookmarkTap: () {
-                                      if (post != null)
-                                        homeNotifier.toggleBookmark(post.id);
-                                    },
-                                    onCommentTap: () {
-                                      if (post != null) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              'Opening comments for ${post.author}...',
-                                            ),
-                                            duration: const Duration(
-                                              seconds: 1,
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    },
-                                    onShareTap: () {
-                                      if (post != null) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              'Sharing ${post.author}\'s broadcast...',
-                                            ),
-                                            duration: const Duration(
-                                              seconds: 1,
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    },
-                                  ),
+                                      // 5. Action Row (Like / Not Interested)
+                                      EngagementBar(
+                                        post: post,
+                                        isLoading: isSkeleton,
+                                        padding: EdgeInsets.only(
+                                          left: 14.0,
+                                          right: 14.0,
+                                          top: captionToActionsGap,
+                                          bottom: 0.0,
+                                        ),
+                                        onLikeTap: () {
+                                          if (post != null) {
+                                            homeNotifier.toggleLike(post.id);
+                                          }
+                                        },
+                                        onNotInterestedTap: () {
+                                          if (post != null) {
+                                            final currentPosts =
+                                                homeState.posts;
+                                            final idx = currentPosts.indexOf(
+                                              post,
+                                            );
+                                            homeNotifier.notInterested(post.id);
 
-                                  // 5. Post Caption
-                                  PostCaption(
-                                    post: post,
-                                    isLoading: isSkeleton,
-                                    onTap: () {
-                                      if (post != null) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              'Navigating to detail screen for ${post.author}',
-                                            ),
-                                            duration: const Duration(
-                                              seconds: 1,
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    },
-                                  ),
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).clearSnackBars();
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: const Text(
+                                                  'Post hidden',
+                                                ),
+                                                backgroundColor:
+                                                    AppColors.darkSurface,
+                                                duration: const Duration(
+                                                  seconds: 4,
+                                                ),
+                                                action: SnackBarAction(
+                                                  label: 'Undo',
+                                                  textColor: AppColors.neonLime,
+                                                  onPressed: () {
+                                                    homeNotifier.insertPostAt(
+                                                      idx,
+                                                      post,
+                                                    );
+                                                  },
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        },
+                                      ),
 
-                                  const SizedBox(height: 24),
-                                ],
+                                      const SizedBox(height: 24),
+                                    ],
+                                  );
+                                },
                               );
                             },
                             childCount:
@@ -345,9 +391,10 @@ class _SocialHomeScreenState extends ConsumerState<SocialHomeScreen> {
             Positioned(
               left: 18,
               right: 18,
-              bottom: MediaQuery.paddingOf(context).bottom + 12,
+              bottom: mediaQuery.padding.bottom + navigationBottomGap,
               child: FloatingAppNavigation(
                 selectedIndex: _currentNavIndex,
+                height: navigationHeight,
                 onTabSelected: (index) {
                   if (index == 2) {
                     Navigator.push(

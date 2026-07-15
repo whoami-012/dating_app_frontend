@@ -7,7 +7,7 @@ class AppTypography {
   static TextStyle getBrandTitle(Color color) {
     return TextStyle(
       fontFamily: fontFamily,
-      fontSize: 24,
+      fontSize: 23,
       fontWeight: FontWeight.w800,
       color: color,
       letterSpacing: -0.5,
@@ -35,7 +35,7 @@ class AppTypography {
   static TextStyle getEngagementCount(Color color) {
     return TextStyle(
       fontFamily: fontFamily,
-      fontSize: 16,
+      fontSize: 17,
       fontWeight: FontWeight.w600,
       color: color,
     );
@@ -53,10 +53,10 @@ class AppTypography {
   static TextStyle getCaption(Color color) {
     return TextStyle(
       fontFamily: fontFamily,
-      fontSize: 15,
+      fontSize: 16,
       fontWeight: FontWeight.w400,
       color: color,
-      height: 1.3,
+      height: 1.35,
     );
   }
 
@@ -64,7 +64,16 @@ class AppTypography {
     return TextStyle(
       fontFamily: fontFamily,
       fontSize: 13,
-      fontWeight: FontWeight.w600,
+      fontWeight: FontWeight.w500,
+      color: color,
+    );
+  }
+
+  static TextStyle getNotInterested(Color color) {
+    return TextStyle(
+      fontFamily: fontFamily,
+      fontSize: 16,
+      fontWeight: FontWeight.w500,
       color: color,
     );
   }

@@ -6,6 +6,8 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/theme_controller.dart';
 import '../../home/providers/home_provider.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../profile/screens/my_profile_screen.dart';
+import '../../profile/providers/my_profile_provider.dart';
 
 class HomeHeader extends ConsumerWidget {
   const HomeHeader({super.key});
@@ -160,6 +162,7 @@ class HomeHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final screenWidth = MediaQuery.sizeOf(context).width;
 
     final primaryColor = isDark
         ? AppColors.darkPrimaryText
@@ -167,123 +170,144 @@ class HomeHeader extends ConsumerWidget {
     final surfaceColor = isDark
         ? AppColors.darkSurface
         : AppColors.lightSurface;
-    final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.07)
+        : Colors.black.withOpacity(0.07);
+
+    // Responsive parameters to prevent overflow on narrow screens
+    final isNarrow = screenWidth < 440;
+    final horizontalPadding = isNarrow ? 12.0 : 18.0;
+    final brandLogoGap = isNarrow ? 8.0 : 10.0;
+    final balanceAvatarGap = isNarrow ? 8.0 : 10.0;
+    final avatarDiameter = isNarrow ? 42.0 : 48.0;
+    final pillHeight = isNarrow ? 42.0 : 46.0;
+    final pillHorizontalPadding = isNarrow ? 12.0 : 16.0;
+    final notificationDotSize = isNarrow ? 9.0 : 11.0;
 
     return Container(
       height: 60,
-      padding: const EdgeInsets.symmetric(horizontal: 18.0),
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Left: Brand Logo and Title
-          Row(
-            children: [
-              SvgPicture.string(
-                '''<svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M14 26V18" stroke="#D4FF00" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M14 3C8.5 8 7 13.5 8 18C9.5 20.5 12 21 14 21C16 21 18.5 20.5 20 18C21 13.5 19.5 8 14 3Z" stroke="#D4FF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M14 18V9" stroke="#D4FF00" stroke-width="1.5" stroke-linecap="round"/>
-                  <path d="M14 15C12 14 10.5 12.5 10 11" stroke="#D4FF00" stroke-width="1.5" stroke-linecap="round"/>
-                  <path d="M14 12C16 11.5 17.5 10 18 8.5" stroke="#D4FF00" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>''',
-                width: 28,
-                height: 28,
-                semanticsLabel: 'Social Tree Logo',
-              ),
-              const SizedBox(width: 10),
-              Text(
-                'Social Tree',
-                style: AppTypography.getBrandTitle(primaryColor),
-              ),
-            ],
+          Expanded(
+            child: Row(
+              children: [
+                SvgPicture.string(
+                  '''<svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14 26V18" stroke="#C9FF24" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M14 3C8.5 8 7 13.5 8 18C9.5 20.5 12 21 14 21C16 21 18.5 20.5 20 18C21 13.5 19.5 8 14 3Z" stroke="#C9FF24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M14 18V9" stroke="#C9FF24" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M14 15C12 14 10.5 12.5 10 11" stroke="#C9FF24" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M14 12C16 11.5 17.5 10 18 8.5" stroke="#C9FF24" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>''',
+                  width: 28,
+                  height: 28,
+                  semanticsLabel: 'Social Tree Logo',
+                ),
+                SizedBox(width: brandLogoGap),
+                Flexible(
+                  child: Text(
+                    'Social Tree',
+                    style: AppTypography.getBrandTitle(
+                      primaryColor,
+                    ).copyWith(fontSize: isNarrow ? 20 : 23),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ),
+
+          const SizedBox(width: 8),
 
           // Right: Gem Balance and Profile Avatar
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Row(
-                children: [
-                  // Gem Balance Pill
-                  Container(
-                    height: 46,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: surfaceColor,
-                      borderRadius: BorderRadius.circular(23),
-                      border: Border.all(color: borderColor),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+              // Gem Balance Pill
+              Container(
+                height: pillHeight,
+                padding: EdgeInsets.symmetric(
+                  horizontal: pillHorizontalPadding,
+                ),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF151515) : surfaceColor,
+                  borderRadius: BorderRadius.circular(pillHeight / 2),
+                  border: Border.all(color: borderColor),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const ShaderMask(
+                      shaderCallback: _gemShader,
+                      child: Icon(
+                        Icons.diamond,
+                        color: Colors.white,
+                        size: 18,
+                        semanticLabel: 'Gems',
+                      ),
                     ),
-                    child: Row(
-                      children: [
-                        const ShaderMask(
-                          shaderCallback: _gemShader,
-                          child: Icon(
-                            Icons.diamond,
-                            color: Colors.white,
-                            size: 20,
-                            semanticLabel: 'Gems',
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '150',
-                          style: AppTypography.getBalance(primaryColor),
-                        ),
-                      ],
+                    const SizedBox(width: 8),
+                    Text(
+                      '150',
+                      style: AppTypography.getBalance(
+                        primaryColor,
+                      ).copyWith(fontSize: isNarrow ? 15 : 18),
                     ),
-                  ),
-                  const SizedBox(width: 10),
+                  ],
+                ),
+              ),
+              SizedBox(width: balanceAvatarGap),
 
-                  // Profile Avatar Button
-                  GestureDetector(
-                    onTap: () => _showThemeSelector(context, ref),
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: isDark ? Colors.white10 : Colors.black12,
-                              width: 1.5,
-                            ),
-                            image: const DecorationImage(
-                              image: NetworkImage(
-                                'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop',
-                              ),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        // Notification dot
-                        Positioned(
-                          right: 0,
-                          top: 0,
-                          child: Container(
-                            width: 12,
-                            height: 12,
-                            decoration: BoxDecoration(
-                              color: AppColors.liveOrange,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: theme.scaffoldBackgroundColor,
-                                width: 2.0,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+              // Profile Avatar Button
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const MyProfileScreen(),
                     ),
-                  ),
-                ],
+                  );
+                },
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: avatarDiameter,
+                      height: avatarDiameter,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isDark ? Colors.white10 : Colors.black12,
+                          width: 1.5,
+                        ),
+                        image: DecorationImage(
+                          image: NetworkImage(
+                            ref.watch(myProfileProvider).user?.coverImageUrl ??
+                                'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=200&auto=format&fit=crop',
+                          ),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    // Notification dot
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        width: notificationDotSize,
+                        height: notificationDotSize,
+                        decoration: BoxDecoration(
+                          color: AppColors.liveOrange,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.black, width: 1.5),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -368,9 +392,6 @@ class _LogoutOptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),

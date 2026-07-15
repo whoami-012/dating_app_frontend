@@ -31,16 +31,16 @@ void main() {
 
   Widget createTestWidget() {
     return ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(testPrefs),
-      ],
-      child: const MaterialApp(
-        home: StoryComposerScreen(),
-      ),
+      overrides: [sharedPreferencesProvider.overrideWithValue(testPrefs)],
+      child: const MaterialApp(home: StoryComposerScreen()),
     );
   }
 
-  void setupViewport(WidgetTester tester, {double width = 800, double height = 1200}) {
+  void setupViewport(
+    WidgetTester tester, {
+    double width = 800,
+    double height = 1200,
+  }) {
     tester.view.physicalSize = Size(width, height);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
@@ -50,7 +50,9 @@ void main() {
   }
 
   group('Story Composer Screen & Flow Tests', () {
-    testWidgets('1. Initial rendering and elements', (WidgetTester tester) async {
+    testWidgets('1. Initial rendering and elements', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -58,13 +60,18 @@ void main() {
       // Check top bar and empty state text
       expect(find.text('Add to Story'), findsOneWidget);
       expect(find.text('Select media to start your story'), findsOneWidget);
-      expect(find.text('Choose from the gallery below or capture with camera'), findsOneWidget);
+      expect(
+        find.text('Choose from the gallery below or capture with camera'),
+        findsOneWidget,
+      );
 
       // Verify Next button in top bar is present and has low opacity/disabled look
       expect(find.text('Next'), findsOneWidget);
     });
 
-    testWidgets('2. Select media and toggle single/multiple selection', (WidgetTester tester) async {
+    testWidgets('2. Select media and toggle single/multiple selection', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -77,8 +84,16 @@ void main() {
       await tester.pump();
 
       // Simulate gallery items selection
-      final item1 = GalleryMedia(id: 'photo_1', path: 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b', isVideo: false);
-      final item2 = GalleryMedia(id: 'photo_2', path: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5', isVideo: false);
+      final item1 = GalleryMedia(
+        id: 'photo_1',
+        path: 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b',
+        isVideo: false,
+      );
+      final item2 = GalleryMedia(
+        id: 'photo_2',
+        path: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5',
+        isVideo: false,
+      );
 
       container.read(storyComposerProvider.notifier).addGalleryMedia(item1);
       container.read(storyComposerProvider.notifier).addGalleryMedia(item2);
@@ -94,7 +109,9 @@ void main() {
       expect(composerState.activeItemIndex, equals(1));
     });
 
-    testWidgets('3. Reordering selected items in multi-selection mode', (WidgetTester tester) async {
+    testWidgets('3. Reordering selected items in multi-selection mode', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -104,12 +121,16 @@ void main() {
 
       // Select multiple items
       container.read(storyGalleryProvider.notifier).toggleMultiSelect();
-      container.read(storyComposerProvider.notifier).addGalleryMedia(
-        const GalleryMedia(id: 'photo_1', path: 'path_1', isVideo: false)
-      );
-      container.read(storyComposerProvider.notifier).addGalleryMedia(
-        const GalleryMedia(id: 'photo_2', path: 'path_2', isVideo: false)
-      );
+      container
+          .read(storyComposerProvider.notifier)
+          .addGalleryMedia(
+            const GalleryMedia(id: 'photo_1', path: 'path_1', isVideo: false),
+          );
+      container
+          .read(storyComposerProvider.notifier)
+          .addGalleryMedia(
+            const GalleryMedia(id: 'photo_2', path: 'path_2', isVideo: false),
+          );
       await tester.pumpAndSettle();
 
       // Verify initial order
@@ -127,7 +148,9 @@ void main() {
       expect(state.selectedItems[1].path, equals('path_1'));
     });
 
-    testWidgets('4. Max selection count limit validation (10 items)', (WidgetTester tester) async {
+    testWidgets('4. Max selection count limit validation (10 items)', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -137,24 +160,33 @@ void main() {
 
       // Add 10 items
       for (int i = 0; i < 10; i++) {
-        container.read(storyComposerProvider.notifier).addGalleryMedia(
-          GalleryMedia(id: 'photo_$i', path: 'path_$i', isVideo: false)
-        );
+        container
+            .read(storyComposerProvider.notifier)
+            .addGalleryMedia(
+              GalleryMedia(id: 'photo_$i', path: 'path_$i', isVideo: false),
+            );
       }
       await tester.pumpAndSettle();
 
       // Try adding 11th item
-      container.read(storyComposerProvider.notifier).addGalleryMedia(
-        const GalleryMedia(id: 'photo_11', path: 'path_11', isVideo: false)
-      );
+      container
+          .read(storyComposerProvider.notifier)
+          .addGalleryMedia(
+            const GalleryMedia(id: 'photo_11', path: 'path_11', isVideo: false),
+          );
       await tester.pump();
 
       // Verify error message is set
       final state = container.read(storyComposerProvider);
-      expect(state.errorMessage, equals('You can select a maximum of 10 items.'));
+      expect(
+        state.errorMessage,
+        equals('You can select a maximum of 10 items.'),
+      );
     });
 
-    testWidgets('5. Video duration limit validation (60s limit)', (WidgetTester tester) async {
+    testWidgets('5. Video duration limit validation (60s limit)', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -163,22 +195,29 @@ void main() {
       final container = ProviderScope.containerOf(element);
 
       // Add long video (>60 seconds)
-      container.read(storyComposerProvider.notifier).addGalleryMedia(
-        const GalleryMedia(
-          id: 'long_video',
-          path: 'video_path',
-          isVideo: true,
-          duration: Duration(seconds: 75),
-        ),
-      );
+      container
+          .read(storyComposerProvider.notifier)
+          .addGalleryMedia(
+            const GalleryMedia(
+              id: 'long_video',
+              path: 'video_path',
+              isVideo: true,
+              duration: Duration(seconds: 75),
+            ),
+          );
       await tester.pump();
 
       // Verify video rejected warning message
       final state = container.read(storyComposerProvider);
-      expect(state.errorMessage, equals('Video exceeds maximum duration of 60 seconds.'));
+      expect(
+        state.errorMessage,
+        equals('Video exceeds maximum duration of 60 seconds.'),
+      );
     });
 
-    testWidgets('6. Canvas text overlay positioning, snapping, and delete', (WidgetTester tester) async {
+    testWidgets('6. Canvas text overlay positioning, snapping, and delete', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
@@ -187,9 +226,11 @@ void main() {
       final container = ProviderScope.containerOf(element);
 
       // Add media item so canvas is visible
-      container.read(storyComposerProvider.notifier).addGalleryMedia(
-        const GalleryMedia(id: 'photo_1', path: 'path_1', isVideo: false)
-      );
+      container
+          .read(storyComposerProvider.notifier)
+          .addGalleryMedia(
+            const GalleryMedia(id: 'photo_1', path: 'path_1', isVideo: false),
+          );
       await tester.pumpAndSettle();
 
       // Add a text overlay
@@ -207,9 +248,9 @@ void main() {
       expect(find.text('Canvas Test Overlay'), findsOneWidget);
 
       // Verify we can update and move overlay position
-      container.read(storyComposerProvider.notifier).updateOverlay(
-        textOverlay.copyWith(x: 100.0, y: 150.0)
-      );
+      container
+          .read(storyComposerProvider.notifier)
+          .updateOverlay(textOverlay.copyWith(x: 100.0, y: 150.0));
       await tester.pumpAndSettle();
 
       final activeItem = container.read(storyComposerProvider).activeItem;
@@ -222,95 +263,95 @@ void main() {
       expect(find.text('Canvas Test Overlay'), findsNothing);
     });
 
-    testWidgets('7. Final preview screen state, audience selection, and draft saving', (WidgetTester tester) async {
-      setupViewport(tester);
+    testWidgets(
+      '7. Final preview screen state, audience selection, and draft saving',
+      (WidgetTester tester) async {
+        setupViewport(tester);
 
-      final items = [
-        const StoryMediaItem(id: 'item_1', path: 'path_1', isVideo: false),
-      ];
+        final items = [
+          const StoryMediaItem(id: 'item_1', path: 'path_1', isVideo: false),
+        ];
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(testPrefs),
-          ],
-          child: MaterialApp(
-            home: StoryPreviewScreen(items: items),
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [sharedPreferencesProvider.overrideWithValue(testPrefs)],
+            child: MaterialApp(home: StoryPreviewScreen(items: items)),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      // Populate selectedItems in storyComposerProvider to allow saving draft
-      final element = tester.element(find.byType(StoryPreviewScreen));
-      final container = ProviderScope.containerOf(element);
-      container.read(storyComposerProvider.notifier).addGalleryMedia(
-        const GalleryMedia(id: 'photo_1', path: 'path_1', isVideo: false),
-      );
-      await tester.pumpAndSettle();
+        // Populate selectedItems in storyComposerProvider to allow saving draft
+        final element = tester.element(find.byType(StoryPreviewScreen));
+        final container = ProviderScope.containerOf(element);
+        container
+            .read(storyComposerProvider.notifier)
+            .addGalleryMedia(
+              const GalleryMedia(id: 'photo_1', path: 'path_1', isVideo: false),
+            );
+        await tester.pumpAndSettle();
 
-      // Check header title in preview
-      expect(find.text('Preview Story'), findsOneWidget);
-      expect(find.text('Save Draft'), findsOneWidget);
-      expect(find.text('Audience: Everyone'), findsOneWidget);
+        // Check header title in preview
+        expect(find.text('Preview Story'), findsOneWidget);
+        expect(find.text('Save Draft'), findsOneWidget);
+        expect(find.text('Audience: Everyone'), findsOneWidget);
 
-      // Save Draft
-      await tester.tap(find.text('Save Draft'));
-      await tester.pumpAndSettle();
+        // Save Draft
+        await tester.tap(find.text('Save Draft'));
+        await tester.pumpAndSettle();
 
-      // Verify draft is saved to Local Storage via SharedPreferences
-      expect(testPrefs.getStringList('dating_app_story_drafts'), isNotNull);
+        // Verify draft is saved to Local Storage via SharedPreferences
+        expect(testPrefs.getStringList('dating_app_story_drafts'), isNotNull);
 
-      // Open Audience Selector popup
-      await tester.tap(find.text('Audience: Everyone'));
-      await tester.pumpAndSettle();
+        // Open Audience Selector popup
+        await tester.tap(find.text('Audience: Everyone'));
+        await tester.pumpAndSettle();
 
-      // Select Close Friends
-      await tester.tap(find.text('Close Friends').last);
-      await tester.pumpAndSettle();
+        // Select Close Friends
+        await tester.tap(find.text('Close Friends').last);
+        await tester.pumpAndSettle();
 
-      // Verify Audience Selector text updated
-      expect(find.text('Audience: Close Friends'), findsOneWidget);
-    });
+        // Verify Audience Selector text updated
+        expect(find.text('Audience: Close Friends'), findsOneWidget);
+      },
+    );
 
-    testWidgets('8. Upload progress and failure states, retry logic, success redirection', (WidgetTester tester) async {
-      setupViewport(tester);
+    testWidgets(
+      '8. Upload progress and failure states, retry logic, success redirection',
+      (WidgetTester tester) async {
+        setupViewport(tester);
 
-      final items = [
-        const StoryMediaItem(id: 'item_1', path: 'path_1', isVideo: false),
-      ];
+        final items = [
+          const StoryMediaItem(id: 'item_1', path: 'path_1', isVideo: false),
+        ];
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(testPrefs),
-          ],
-          child: MaterialApp(
-            home: StoryPreviewScreen(items: items),
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [sharedPreferencesProvider.overrideWithValue(testPrefs)],
+            child: MaterialApp(home: StoryPreviewScreen(items: items)),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      final element = tester.element(find.byType(StoryPreviewScreen));
-      final container = ProviderScope.containerOf(element);
+        final element = tester.element(find.byType(StoryPreviewScreen));
+        final container = ProviderScope.containerOf(element);
 
-      // Trigger standard upload
-      await tester.tap(find.byType(StoryShareButton));
-      await tester.pump(); // Enter uploading state
+        // Trigger standard upload
+        await tester.tap(find.byType(StoryShareButton));
+        await tester.pump(); // Enter uploading state
 
-      // Verify status is uploading
-      var uploadState = container.read(storyUploadProvider);
-      expect(uploadState.status, equals(StoryUploadStatus.uploading));
+        // Verify status is uploading
+        var uploadState = container.read(storyUploadProvider);
+        expect(uploadState.status, equals(StoryUploadStatus.uploading));
 
-      // Resolve uploading timer
-      await tester.pump(const Duration(seconds: 2));
-      await tester.pumpAndSettle();
+        // Resolve uploading timer
+        await tester.pump(const Duration(seconds: 2));
+        await tester.pumpAndSettle();
 
-      // Verify success
-      uploadState = container.read(storyUploadProvider);
-      expect(uploadState.status, equals(StoryUploadStatus.success));
-    });
+        // Verify success
+        uploadState = container.read(storyUploadProvider);
+        expect(uploadState.status, equals(StoryUploadStatus.success));
+      },
+    );
 
     testWidgets('9. Small device viewport safety', (WidgetTester tester) async {
       setupViewport(tester, width: 320, height: 720);
@@ -319,7 +360,9 @@ void main() {
       expect(find.byType(StoryComposerScreen), findsOneWidget);
     });
 
-    testWidgets('10. High text scaling adaptability', (WidgetTester tester) async {
+    testWidgets('10. High text scaling adaptability', (
+      WidgetTester tester,
+    ) async {
       setupViewport(tester);
       await tester.pumpWidget(
         MediaQuery(
@@ -374,12 +417,73 @@ class _MockHttpHeaders implements HttpHeaders {
 
 class _MockHttpClientResponse implements HttpClientResponse {
   static const List<int> _imageBytes = [
-    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
-    0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
-    0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00,
-    0x0A, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
-    0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49,
-    0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+    0x89,
+    0x50,
+    0x4E,
+    0x47,
+    0x0D,
+    0x0A,
+    0x1A,
+    0x0A,
+    0x00,
+    0x00,
+    0x00,
+    0x0D,
+    0x49,
+    0x48,
+    0x44,
+    0x52,
+    0x00,
+    0x00,
+    0x00,
+    0x01,
+    0x00,
+    0x00,
+    0x00,
+    0x01,
+    0x08,
+    0x06,
+    0x00,
+    0x00,
+    0x00,
+    0x1F,
+    0x15,
+    0xC4,
+    0x89,
+    0x00,
+    0x00,
+    0x00,
+    0x0A,
+    0x49,
+    0x44,
+    0x41,
+    0x54,
+    0x78,
+    0x9C,
+    0x63,
+    0x00,
+    0x01,
+    0x00,
+    0x00,
+    0x05,
+    0x00,
+    0x01,
+    0x0D,
+    0x0A,
+    0x2D,
+    0xB4,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x49,
+    0x45,
+    0x4E,
+    0x44,
+    0xAE,
+    0x42,
+    0x60,
+    0x82,
   ];
 
   @override

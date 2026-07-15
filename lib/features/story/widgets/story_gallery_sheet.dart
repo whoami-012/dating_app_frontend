@@ -26,7 +26,9 @@ class StoryGallerySheet extends ConsumerWidget {
     final isSmallScreen = MediaQuery.of(context).size.width < 360;
 
     final backgroundColor = isDark ? const Color(0xFF111214) : Colors.white;
-    final borderColor = isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.08);
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.08)
+        : Colors.black.withOpacity(0.08);
 
     return Container(
       decoration: BoxDecoration(
@@ -56,7 +58,12 @@ class StoryGallerySheet extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // Left: Album selector drop down
-                _buildAlbumSelector(context, ref, galleryState, isSmallScreen: isSmallScreen),
+                _buildAlbumSelector(
+                  context,
+                  ref,
+                  galleryState,
+                  isSmallScreen: isSmallScreen,
+                ),
 
                 // Right: View toggles
                 Row(
@@ -66,7 +73,9 @@ class StoryGallerySheet extends ConsumerWidget {
                       isActive: galleryState.isMultiSelectEnabled,
                       horizontalPadding: isSmallScreen ? 8 : 12,
                       onTap: () {
-                        ref.read(storyGalleryProvider.notifier).toggleMultiSelect();
+                        ref
+                            .read(storyGalleryProvider.notifier)
+                            .toggleMultiSelect();
                       },
                     ),
                     SizedBox(width: isSmallScreen ? 4 : 8),
@@ -76,7 +85,9 @@ class StoryGallerySheet extends ConsumerWidget {
                           : Icons.view_list_rounded,
                       isActive: true,
                       onTap: () {
-                        ref.read(storyGalleryProvider.notifier).toggleViewMode();
+                        ref
+                            .read(storyGalleryProvider.notifier)
+                            .toggleViewMode();
                       },
                     ),
                   ],
@@ -88,7 +99,8 @@ class StoryGallerySheet extends ConsumerWidget {
           const SizedBox(height: 12),
 
           // 3. Selected Media Reorder Strip (horizontal)
-          if (composerState.selectedItems.isNotEmpty && galleryState.isMultiSelectEnabled)
+          if (composerState.selectedItems.isNotEmpty &&
+              galleryState.isMultiSelectEnabled)
             _buildSelectedMediaStrip(context, ref, composerState.selectedItems),
 
           const SizedBox(height: 8),
@@ -107,11 +119,15 @@ class StoryGallerySheet extends ConsumerWidget {
                   onCameraTap: onCameraTap,
                   onMediaTap: (media) {
                     if (galleryState.isMultiSelectEnabled) {
-                      ref.read(storyComposerProvider.notifier).addGalleryMedia(media);
+                      ref
+                          .read(storyComposerProvider.notifier)
+                          .addGalleryMedia(media);
                     } else {
                       // Single selection: reset and add
                       ref.read(storyComposerProvider.notifier).reset();
-                      ref.read(storyComposerProvider.notifier).addGalleryMedia(media);
+                      ref
+                          .read(storyComposerProvider.notifier)
+                          .addGalleryMedia(media);
                     }
                   },
                 ),
@@ -125,7 +141,11 @@ class StoryGallerySheet extends ConsumerWidget {
   }
 
   Widget _buildAlbumSelector(
-      BuildContext context, WidgetRef ref, StoryGalleryState state, {bool isSmallScreen = false}) {
+    BuildContext context,
+    WidgetRef ref,
+    StoryGalleryState state, {
+    bool isSmallScreen = false,
+  }) {
     return PopupMenuButton<String>(
       onSelected: (album) {
         ref.read(storyGalleryProvider.notifier).selectAlbum(album);
@@ -194,7 +214,9 @@ class StoryGallerySheet extends ConsumerWidget {
           color: isActive ? const Color(0xFFD1FF2F) : const Color(0xFF18191D),
           borderRadius: BorderRadius.circular(19),
           border: Border.all(
-            color: isActive ? Colors.transparent : Colors.white.withOpacity(0.08),
+            color: isActive
+                ? Colors.transparent
+                : Colors.white.withOpacity(0.08),
           ),
         ),
         child: Center(
@@ -226,30 +248,34 @@ class StoryGallerySheet extends ConsumerWidget {
           shape: BoxShape.circle,
           border: Border.all(color: Colors.white.withOpacity(0.08)),
         ),
-        child: Icon(
-          icon,
-          color: Colors.white,
-          size: 18,
-        ),
+        child: Icon(icon, color: Colors.white, size: 18),
       ),
     );
   }
 
   Widget _buildSelectedMediaStrip(
-      BuildContext context, WidgetRef ref, List<StoryMediaItem> items) {
+    BuildContext context,
+    WidgetRef ref,
+    List<StoryMediaItem> items,
+  ) {
     return Container(
       height: 90,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: ReorderableListView.builder(
         scrollDirection: Axis.horizontal,
         onReorder: (oldIndex, newIndex) {
-          ref.read(storyComposerProvider.notifier).reorderMedia(oldIndex, newIndex);
+          ref
+              .read(storyComposerProvider.notifier)
+              .reorderMedia(oldIndex, newIndex);
         },
         itemCount: items.length,
         itemBuilder: (context, index) {
           final item = items[index];
-          final path = item.isVideo ? (item.thumbnailPath ?? item.path) : item.path;
-          final isNetwork = path.startsWith('http://') || path.startsWith('https://');
+          final path = item.isVideo
+              ? (item.thumbnailPath ?? item.path)
+              : item.path;
+          final isNetwork =
+              path.startsWith('http://') || path.startsWith('https://');
 
           return Container(
             key: ValueKey(item.id),
@@ -276,7 +302,9 @@ class StoryGallerySheet extends ConsumerWidget {
                     right: 2,
                     child: GestureDetector(
                       onTap: () {
-                        ref.read(storyComposerProvider.notifier).removeMediaItem(item.id);
+                        ref
+                            .read(storyComposerProvider.notifier)
+                            .removeMediaItem(item.id);
                       },
                       child: Container(
                         padding: const EdgeInsets.all(2),

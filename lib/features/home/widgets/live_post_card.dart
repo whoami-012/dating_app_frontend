@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_typography.dart';
 import '../models/feed_post.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
@@ -29,134 +28,43 @@ class LivePostCard extends StatelessWidget {
 
     return GestureDetector(
       onDoubleTap: onDoubleTap,
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(28),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(28),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Background Media (Video or Image)
-              if (p.isVideo && p.videoUrl != null)
-                VideoPostPlayer(
-                  videoUrl: p.videoUrl!,
-                  thumbnailUrl: p.mediaUrl,
-                  mediaAlignmentX: p.mediaAlignmentX,
-                  mediaAlignmentY: p.mediaAlignmentY,
-                )
-              else if (p.mediaUrl.startsWith('http://') ||
-                  p.mediaUrl.startsWith('https://'))
-                CachedNetworkImage(
-                  imageUrl: p.mediaUrl,
-                  fit: BoxFit.cover,
-                  alignment: Alignment(
-                    p.mediaAlignmentX ?? 0.0,
-                    p.mediaAlignmentY ?? 0.0,
-                  ),
-                  placeholder: (context, url) => const _ImagePlaceholder(),
-                  errorWidget: (context, url, error) =>
-                      const _ImageErrorState(),
-                )
-              else
-                Image.file(
-                  File(p.mediaUrl),
-                  fit: BoxFit.cover,
-                  alignment: Alignment(
-                    p.mediaAlignmentX ?? 0.0,
-                    p.mediaAlignmentY ?? 0.0,
-                  ),
-                  errorBuilder: (context, error, stackTrace) =>
-                      const _ImageErrorState(),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(29),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Background Media (Video or Image)
+            if (p.isVideo && p.videoUrl != null)
+              VideoPostPlayer(
+                videoUrl: p.videoUrl!,
+                thumbnailUrl: p.mediaUrl,
+                mediaAlignmentX: p.mediaAlignmentX,
+                mediaAlignmentY: p.mediaAlignmentY,
+              )
+            else if (p.mediaUrl.startsWith('http://') ||
+                p.mediaUrl.startsWith('https://'))
+              CachedNetworkImage(
+                imageUrl: p.mediaUrl,
+                fit: BoxFit.cover,
+                alignment: Alignment(
+                  p.mediaAlignmentX ?? 0.08,
+                  p.mediaAlignmentY ?? -0.05,
                 ),
-
-              // Top Badges Overlays
-              Positioned(
-                top: 16,
-                left: 16,
-                right: 16,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // LIVE Badge
-                    if (p.isLive)
-                      Container(
-                        height: 46,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: AppColors.liveGradient,
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.liveOrange.withOpacity(0.15),
-                              blurRadius: 8,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          'LIVE',
-                          style: AppTypography.getBadgeText(Colors.white),
-                        ),
-                      ),
-
-                    // Viewer Badge
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(24),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 14.0, sigmaY: 14.0),
-                        child: Container(
-                          height: 48,
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.52),
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.12),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.people_outline,
-                                color: Colors.white,
-                                size: 20,
-                                semanticLabel: 'Viewer Count',
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                p.viewerCount,
-                                style: AppTypography.getBadgeText(Colors.white)
-                                    .copyWith(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                placeholder: (context, url) => const _ImagePlaceholder(),
+                errorWidget: (context, url, error) => const _ImageErrorState(),
+              )
+            else
+              Image.file(
+                File(p.mediaUrl),
+                fit: BoxFit.cover,
+                alignment: Alignment(
+                  p.mediaAlignmentX ?? 0.08,
+                  p.mediaAlignmentY ?? -0.05,
                 ),
+                errorBuilder: (context, error, stackTrace) =>
+                    const _ImageErrorState(),
               ),
-            ],
-          ),
+          ],
         ),
       ),
     );
@@ -259,7 +167,7 @@ class _LivePostCardSkeletonState extends State<_LivePostCardSkeleton>
         width: double.infinity,
         decoration: BoxDecoration(
           color: baseColor,
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(29),
         ),
       ),
     );

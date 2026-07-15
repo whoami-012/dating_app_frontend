@@ -1,10 +1,6 @@
 import 'dart:convert';
 
-enum StoryOverlayType {
-  text,
-  sticker,
-  music,
-}
+enum StoryOverlayType { text, sticker, music }
 
 class StoryOverlay {
   final String id;
