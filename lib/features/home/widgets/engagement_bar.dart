@@ -7,7 +7,7 @@ class EngagementBar extends StatelessWidget {
   final FeedPost? post;
   final bool isLoading;
   final VoidCallback onLikeTap;
-  final VoidCallback onNotInterestedTap;
+  final VoidCallback? onNotInterestedTap;
   final EdgeInsetsGeometry? padding;
 
   const EngagementBar({
@@ -15,7 +15,7 @@ class EngagementBar extends StatelessWidget {
     required this.post,
     required this.isLoading,
     required this.onLikeTap,
-    required this.onNotInterestedTap,
+    this.onNotInterestedTap,
     this.padding,
     // Add unused parameters for compatibility
     VoidCallback? onBookmarkTap,
@@ -29,7 +29,6 @@ class EngagementBar extends StatelessWidget {
       post: post,
       isLoading: isLoading,
       onLikeTap: onLikeTap,
-      onNotInterestedTap: onNotInterestedTap,
       padding: padding,
     );
   }
@@ -39,7 +38,6 @@ class PostActionRow extends StatelessWidget {
   final FeedPost? post;
   final bool isLoading;
   final VoidCallback onLikeTap;
-  final VoidCallback onNotInterestedTap;
   final EdgeInsetsGeometry? padding;
 
   const PostActionRow({
@@ -47,7 +45,6 @@ class PostActionRow extends StatelessWidget {
     required this.post,
     required this.isLoading,
     required this.onLikeTap,
-    required this.onNotInterestedTap,
     this.padding,
   });
 
@@ -64,15 +61,7 @@ class PostActionRow extends StatelessWidget {
         top: 12.0,
         bottom: 0.0,
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: LikeActionButton(post: post!, onTap: onLikeTap),
-          ),
-          const SizedBox(width: 14),
-          Expanded(child: NotInterestedButton(onTap: onNotInterestedTap)),
-        ],
-      ),
+      child: LikeActionButton(post: post!, onTap: onLikeTap),
     );
   }
 }
@@ -320,28 +309,12 @@ class _PostActionRowSkeletonState extends State<_PostActionRowSkeleton>
               top: 12.0,
               bottom: 0.0,
             ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Container(
-                height: 58,
-                decoration: BoxDecoration(
-                  color: baseColor,
-                  borderRadius: BorderRadius.circular(29),
-                ),
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Container(
-                height: 58,
-                decoration: BoxDecoration(
-                  color: baseColor,
-                  borderRadius: BorderRadius.circular(29),
-                ),
-              ),
-            ),
-          ],
+        child: Container(
+          height: 58,
+          decoration: BoxDecoration(
+            color: baseColor,
+            borderRadius: BorderRadius.circular(29),
+          ),
         ),
       ),
     );

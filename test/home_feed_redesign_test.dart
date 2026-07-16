@@ -54,14 +54,14 @@ void main() {
         // Stories are NOT rendered on this screen anymore
         expect(find.text('Stories'), findsNothing);
 
-        // Verify actions
+        // Verify actions (only Like action is shown on public post feed)
         expect(find.byType(LikeActionButton), findsAtLeastNWidgets(1));
-        expect(find.byType(NotInterestedButton), findsAtLeastNWidgets(1));
+        expect(find.byType(NotInterestedButton), findsNothing);
       },
     );
 
     testWidgets(
-      '2. Clicking "Not interested" optimistically hides the post and shows Undo Snack bar',
+      '2. "Not interested" button is not displayed on public post cards',
       (WidgetTester tester) async {
         await tester.pumpWidget(
           ProviderScope(
@@ -76,25 +76,9 @@ void main() {
         // Verify we have a post initially
         expect(find.byType(LivePostCard), findsAtLeastNWidgets(1));
 
-        // Find the "Not interested" button and tap it
-        final notInterestedFinder = find.byType(NotInterestedButton).first;
-        await tester.ensureVisible(notInterestedFinder);
-        await tester.pump();
-        await tester.tap(notInterestedFinder);
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 500));
-
-        // Undo snackbar should be displayed
-        expect(find.text('Post hidden'), findsOneWidget);
-        expect(find.text('Undo'), findsOneWidget);
-
-        // Tap Undo to restore
-        await tester.tap(find.text('Undo'));
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 500));
-
-        // Post should be restored
-        expect(find.byType(LivePostCard), findsAtLeastNWidgets(1));
+        // Find the "Not interested" button and confirm it does not exist
+        final notInterestedFinder = find.byType(NotInterestedButton);
+        expect(notInterestedFinder, findsNothing);
       },
     );
 

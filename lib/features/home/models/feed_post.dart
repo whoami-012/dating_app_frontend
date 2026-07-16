@@ -16,6 +16,13 @@ class FeedPost {
   final bool isBookmarked;
   final double? mediaAlignmentX;
   final double? mediaAlignmentY;
+  final String? username;
+  final bool isVerified;
+
+  final String? authorId;
+  final String? mediaId;
+  final String? contentType;
+  final String? createdAt;
 
   const FeedPost({
     required this.id,
@@ -24,17 +31,23 @@ class FeedPost {
     required this.mediaUrl,
     this.videoUrl,
     this.isVideo = false,
-    required this.isLive,
-    required this.viewerCount,
+    this.isLive = false,
+    this.viewerCount = '0',
     required this.likeCount,
-    required this.commentCount,
-    required this.shareCount,
-    required this.bookmarkCount,
+    this.commentCount = 0,
+    this.shareCount = 0,
+    this.bookmarkCount = 0,
     required this.caption,
     this.isLiked = false,
     this.isBookmarked = false,
     this.mediaAlignmentX,
     this.mediaAlignmentY,
+    this.username,
+    this.isVerified = false,
+    this.authorId,
+    this.mediaId,
+    this.contentType,
+    this.createdAt,
   });
 
   FeedPost copyWith({
@@ -55,6 +68,12 @@ class FeedPost {
     bool? isBookmarked,
     double? mediaAlignmentX,
     double? mediaAlignmentY,
+    String? username,
+    bool? isVerified,
+    String? authorId,
+    String? mediaId,
+    String? contentType,
+    String? createdAt,
   }) {
     return FeedPost(
       id: id ?? this.id,
@@ -74,6 +93,12 @@ class FeedPost {
       isBookmarked: isBookmarked ?? this.isBookmarked,
       mediaAlignmentX: mediaAlignmentX ?? this.mediaAlignmentX,
       mediaAlignmentY: mediaAlignmentY ?? this.mediaAlignmentY,
+      username: username ?? this.username,
+      isVerified: isVerified ?? this.isVerified,
+      authorId: authorId ?? this.authorId,
+      mediaId: mediaId ?? this.mediaId,
+      contentType: contentType ?? this.contentType,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 }

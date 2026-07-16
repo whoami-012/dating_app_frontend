@@ -25,6 +25,112 @@ class SocialHomeScreen extends ConsumerStatefulWidget {
 
 class _SocialHomeScreenState extends ConsumerState<SocialHomeScreen> {
   int _currentNavIndex = 0;
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController()..addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 400) {
+      ref.read(homeProvider.notifier).loadMorePosts();
+    }
+  }
+
+  void _showMatchDialog(String displayName, String imageUrl) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF141414),
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(color: AppColors.neonLime.withOpacity(0.3), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.neonLime.withOpacity(0.1),
+                  blurRadius: 20,
+                  spreadRadius: 5,
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "IT'S A MATCH!",
+                  style: TextStyle(
+                    color: AppColors.neonLime,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2.0,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 3),
+                    image: imageUrl.isNotEmpty
+                        ? DecorationImage(
+                            image: NetworkImage(imageUrl),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: imageUrl.isEmpty
+                      ? const Icon(Icons.person, size: 60, color: Colors.white)
+                      : null,
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  "You and $displayName liked each other.",
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.neonLime,
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  ),
+                  child: const Text(
+                    "Keep Swiping",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +187,7 @@ class _SocialHomeScreenState extends ConsumerState<SocialHomeScreen> {
                 child: SafeArea(
                   bottom: false,
                   child: CustomScrollView(
+                    controller: _scrollController,
                     clipBehavior: Clip.hardEdge,
                     physics: const AlwaysScrollableScrollPhysics(
                       parent: BouncingScrollPhysics(),
@@ -190,7 +297,6 @@ class _SocialHomeScreenState extends ConsumerState<SocialHomeScreen> {
                         SliverList(
                           delegate: SliverChildBuilderDelegate(
                             (itemContext, index) {
-                              // Handle initial skeleton loading when posts lists are empty
                               final isSkeleton =
                                   homeState.isLoading &&
                                   homeState.posts.isEmpty;
@@ -258,27 +364,20 @@ class _SocialHomeScreenState extends ConsumerState<SocialHomeScreen> {
                                           child: LivePostCard(
                                             post: post,
                                             isLoading: isSkeleton,
-                                            onDoubleTap: () {
+                                            onDoubleTap: () async {
                                               if (post != null) {
-                                                homeNotifier.toggleLike(
-                                                  post.id,
-                                                );
-                                                ScaffoldMessenger.of(
-                                                  context,
-                                                ).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(
-                                                      post.isLiked
-                                                          ? 'Unliked post'
-                                                          : 'Liked post!',
-                                                    ),
-                                                    duration: const Duration(
-                                                      milliseconds: 700,
-                                                    ),
-                                                    backgroundColor:
-                                                        AppColors.liveRed,
-                                                  ),
-                                                );
+                                                try {
+                                                  await homeNotifier.togglePostLike(post.id);
+                                                } catch (e) {
+                                                  if (context.mounted) {
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text('Failed to like: $e'),
+                                                        backgroundColor: Colors.redAccent,
+                                                      ),
+                                                    );
+                                                  }
+                                                }
                                               }
                                             },
                                           ),
@@ -319,47 +418,46 @@ class _SocialHomeScreenState extends ConsumerState<SocialHomeScreen> {
                                           top: captionToActionsGap,
                                           bottom: 0.0,
                                         ),
-                                        onLikeTap: () {
+                                        onLikeTap: () async {
                                           if (post != null) {
-                                            homeNotifier.toggleLike(post.id);
+                                            try {
+                                              await homeNotifier.togglePostLike(post.id);
+                                            } catch (e) {
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text('Failed to like: $e'),
+                                                    backgroundColor: Colors.redAccent,
+                                                  ),
+                                                );
+                                              }
+                                            }
                                           }
                                         },
-                                        onNotInterestedTap: () {
+                                        onNotInterestedTap: () async {
                                           if (post != null) {
-                                            final currentPosts =
-                                                homeState.posts;
-                                            final idx = currentPosts.indexOf(
-                                              post,
-                                            );
-                                            homeNotifier.notInterested(post.id);
-
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).clearSnackBars();
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: const Text(
-                                                  'Post hidden',
-                                                ),
-                                                backgroundColor:
-                                                    AppColors.darkSurface,
-                                                duration: const Duration(
-                                                  seconds: 4,
-                                                ),
-                                                action: SnackBarAction(
-                                                  label: 'Undo',
-                                                  textColor: AppColors.neonLime,
-                                                  onPressed: () {
-                                                    homeNotifier.insertPostAt(
-                                                      idx,
-                                                      post,
-                                                    );
-                                                  },
-                                                ),
-                                              ),
-                                            );
+                                            try {
+                                              await homeNotifier.notInterested(post.id);
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).clearSnackBars();
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text('Profile passed'),
+                                                    backgroundColor: AppColors.darkSurface,
+                                                    duration: Duration(seconds: 2),
+                                                  ),
+                                                );
+                                              }
+                                            } catch (e) {
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text('Failed to pass: $e'),
+                                                    backgroundColor: Colors.redAccent,
+                                                  ),
+                                                );
+                                              }
+                                            }
                                           }
                                         },
                                       ),
@@ -377,6 +475,18 @@ class _SocialHomeScreenState extends ConsumerState<SocialHomeScreen> {
                           ),
                         ),
 
+                      if (homeState.isPageLoading)
+                        const SliverToBoxAdapter(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 20.0),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.neonLime,
+                              ),
+                            ),
+                          ),
+                        ),
+
                       // Bottom Spacer to prevent floating nav overlap
                       SliverToBoxAdapter(
                         child: SizedBox(height: scrollBottomPadding),
@@ -387,16 +497,22 @@ class _SocialHomeScreenState extends ConsumerState<SocialHomeScreen> {
               ),
             ),
 
-            // 6. Floating Navigation Bar Overlay
+            // Floating Custom Navigation Bar
             Positioned(
-              left: 18,
-              right: 18,
-              bottom: mediaQuery.padding.bottom + navigationBottomGap,
+              left: 0,
+              right: 0,
+              bottom: 0,
               child: FloatingAppNavigation(
                 selectedIndex: _currentNavIndex,
-                height: navigationHeight,
                 onTabSelected: (index) {
-                  if (index == 2) {
+                  if (index == 1) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const StoryComposerScreen(),
+                      ),
+                    );
+                  } else if (index == 2) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(

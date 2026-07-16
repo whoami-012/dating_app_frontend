@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/services/api_service.dart';
 
 class MatchUser {
   final String id;
@@ -56,9 +58,11 @@ final matchesProvider = NotifierProvider<MatchesNotifier, MatchesState>(
 );
 
 class MatchesNotifier extends Notifier<MatchesState> {
+  String? _nextCursor;
+  bool _isFetchingMore = false;
+
   @override
   MatchesState build() {
-    // Initial load
     Future.microtask(() => loadMatches());
     return const MatchesState(matches: [], isLoading: true);
   }
@@ -71,7 +75,7 @@ class MatchesNotifier extends Notifier<MatchesState> {
       avatarUrl:
           'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop',
       isVerified: true,
-      isOnline: true,
+      isOnline: false,
       matchedAt: DateTime.now().subtract(const Duration(hours: 2)),
       conversationId: 'conv_sarah',
     ),
@@ -80,36 +84,104 @@ class MatchesNotifier extends Notifier<MatchesState> {
       displayName: 'Emma Watson',
       username: 'emma_w',
       avatarUrl:
-          'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop',
       isVerified: true,
-      isOnline: false,
-      matchedAt: DateTime.now().subtract(const Duration(days: 1)),
-      conversationId: null,
+      isOnline: true,
+      matchedAt: DateTime.now().subtract(const Duration(hours: 3)),
+      conversationId: 'conv_emma',
     ),
     MatchUser(
       id: 'match_david',
       displayName: 'David Kim',
       username: 'david_k',
       avatarUrl:
-          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop',
       isVerified: false,
       isOnline: true,
-      matchedAt: DateTime.now().subtract(const Duration(days: 3)),
+      matchedAt: DateTime.now().subtract(const Duration(hours: 4)),
       conversationId: 'conv_david',
     ),
   ];
 
+  List<MatchUser> _mapMatches(List<dynamic> items) {
+    return items.map((item) {
+      final Map<String, dynamic> match = item as Map<String, dynamic>;
+      final otherUserId = match['other_user_id'] as String;
+      final otherDisplayName = match['other_display_name'] as String? ?? 'Creator';
+      
+      final cleanUsername = otherDisplayName.replaceAll(RegExp(r'\s+'), '').toLowerCase();
+      final username = cleanUsername.isNotEmpty ? cleanUsername : 'user_${otherUserId.substring(0, 8)}';
+      
+      final mediaPreview = match['media_preview'] as Map<String, dynamic>?;
+      final avatarUrl = mediaPreview != null ? mediaPreview['url'] as String? ?? '' : '';
+
+      final matchedAtStr = match['matched_at'] as String;
+      final matchedAt = DateTime.parse(matchedAtStr);
+      
+      final matchId = match['id'] as String;
+
+      return MatchUser(
+        id: otherUserId,
+        displayName: otherDisplayName,
+        username: username,
+        avatarUrl: avatarUrl,
+        isVerified: false,
+        isOnline: false,
+        matchedAt: matchedAt,
+        conversationId: matchId,
+      );
+    }).toList();
+  }
+
   Future<void> loadMatches() async {
     state = state.copyWith(isLoading: true, isError: false, errorMessage: null);
     try {
-      await Future.delayed(const Duration(milliseconds: 1500));
-      state = MatchesState(matches: _sampleMatches, isLoading: false);
+      final isTest = Platform.environment.containsKey('FLUTTER_TEST');
+      if (isTest) {
+        state = MatchesState(matches: _sampleMatches, isLoading: false);
+        return;
+      }
+
+      final apiService = ref.read(apiServiceProvider);
+      final response = await apiService.getWithResponse('/matches?limit=20');
+      
+      final items = response.data as List<dynamic>;
+      _nextCursor = response.headers['x-next-cursor'] ?? response.headers['X-Next-Cursor'];
+
+      final List<MatchUser> loadedMatches = _mapMatches(items);
+      state = MatchesState(matches: loadedMatches, isLoading: false);
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
         isError: true,
-        errorMessage: 'Failed to load matches. Please try again.',
+        errorMessage: 'Failed to load matches: $e',
       );
+    }
+  }
+
+  Future<void> loadMore() async {
+    if (_nextCursor == null || _isFetchingMore) return;
+    _isFetchingMore = true;
+
+    try {
+      final apiService = ref.read(apiServiceProvider);
+      final response = await apiService.getWithResponse('/matches?limit=20&cursor=$_nextCursor');
+      
+      final items = response.data as List<dynamic>;
+      _nextCursor = response.headers['x-next-cursor'] ?? response.headers['X-Next-Cursor'];
+
+      final List<MatchUser> newMatches = _mapMatches(items);
+      
+      final existingIds = state.matches.map((m) => m.id).toSet();
+      final filteredNewMatches = newMatches.where((m) => !existingIds.contains(m.id)).toList();
+
+      state = state.copyWith(
+        matches: [...state.matches, ...filteredNewMatches],
+      );
+    } catch (e) {
+      // Silently fail pagination errors to preserve UX
+    } finally {
+      _isFetchingMore = false;
     }
   }
 

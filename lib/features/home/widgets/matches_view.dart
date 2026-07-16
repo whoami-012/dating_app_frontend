@@ -223,7 +223,16 @@ class MatchesView extends ConsumerWidget {
                         child: CircleAvatar(
                           radius: 30,
                           backgroundColor: secondaryText.withOpacity(0.1),
-                          backgroundImage: NetworkImage(match.avatarUrl),
+                          backgroundImage: match.avatarUrl.isNotEmpty
+                              ? NetworkImage(match.avatarUrl)
+                              : null,
+                          child: match.avatarUrl.isEmpty
+                              ? Icon(
+                                  Icons.person,
+                                  color: secondaryText.withOpacity(0.5),
+                                  size: 30,
+                                )
+                              : null,
                         ),
                       ),
                       if (match.isOnline)

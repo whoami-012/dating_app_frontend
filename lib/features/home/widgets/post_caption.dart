@@ -66,30 +66,64 @@ class PostCaption extends StatelessWidget {
                   height: 48,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    image: DecorationImage(
-                      image: NetworkImage(p.authorAvatarUrl),
-                      fit: BoxFit.cover,
-                    ),
+                    color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                    image: p.authorAvatarUrl.isNotEmpty
+                        ? DecorationImage(
+                            image: NetworkImage(p.authorAvatarUrl),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
                   ),
+                  child: p.authorAvatarUrl.isEmpty
+                      ? Icon(
+                          Icons.person,
+                          color: isDark ? AppColors.darkMutedText : AppColors.lightMutedText,
+                          size: 24,
+                        )
+                      : null,
                 ),
                 const SizedBox(width: 12),
 
-                // Username
-                Text(
-                  p.author,
-                  style: AppTypography.getUsername(
-                    primaryColor,
-                  ).copyWith(fontSize: 16.5, fontWeight: FontWeight.w700),
+                // Username/Display Name
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              p.author,
+                              style: AppTypography.getUsername(
+                                primaryColor,
+                              ).copyWith(fontSize: 16.5, fontWeight: FontWeight.w700),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (p.isVerified) ...[
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.verified,
+                              color: Colors.blueAccent,
+                              size: 16,
+                            ),
+                          ],
+                        ],
+                      ),
+                      if (p.username != null && p.username!.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          '@${p.username}',
+                          style: AppTypography.getCaption(
+                            mutedColor,
+                          ).copyWith(fontSize: 14.0, fontWeight: FontWeight.w400),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
                 const SizedBox(width: 16),
-
-                // Posting time
-                Text(
-                  '2h ago',
-                  style: AppTypography.getCaption(
-                    mutedColor,
-                  ).copyWith(fontSize: 15.5, fontWeight: FontWeight.w400),
-                ),
               ],
             ),
             SizedBox(height: creatorToCaptionGap ?? 12.0),

@@ -38,44 +38,91 @@ class ApiService {
 
   Future<dynamic> get(String path) async {
     final url = Uri.parse('$baseUrl$path');
+    final http.Response response;
     try {
-      final response = await http.get(url, headers: _headers());
-      return _handleResponse(response);
+      response = await http.get(url, headers: _headers());
     } catch (e) {
       throw Exception('Network error: $e');
     }
+    return _handleResponse(response);
   }
 
   Future<dynamic> post(String path, dynamic body) async {
     final url = Uri.parse('$baseUrl$path');
+    final http.Response response;
     try {
-      final response = await http.post(
+      response = await http.post(
         url,
         headers: _headers(),
         body: jsonEncode(body),
       );
-      return _handleResponse(response);
     } catch (e) {
       throw Exception('Network error: $e');
     }
+    return _handleResponse(response);
   }
 
   Future<dynamic> patch(String path, dynamic body) async {
     final url = Uri.parse('$baseUrl$path');
+    final http.Response response;
     try {
-      final response = await http.patch(
+      response = await http.patch(
         url,
         headers: _headers(),
         body: jsonEncode(body),
       );
-      return _handleResponse(response);
     } catch (e) {
       throw Exception('Network error: $e');
     }
+    return _handleResponse(response);
+  }
+
+  Future<dynamic> put(String path, dynamic body) async {
+    final url = Uri.parse('$baseUrl$path');
+    final http.Response response;
+    try {
+      response = await http.put(
+        url,
+        headers: _headers(),
+        body: jsonEncode(body),
+      );
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+    return _handleResponse(response);
+  }
+
+  Future<dynamic> delete(String path) async {
+    final url = Uri.parse('$baseUrl$path');
+    final http.Response response;
+    try {
+      response = await http.delete(
+        url,
+        headers: _headers(),
+      );
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+    return _handleResponse(response);
+  }
+
+  Future<ApiResponse> getWithResponse(String path) async {
+    final url = Uri.parse('$baseUrl$path');
+    final http.Response response;
+    try {
+      response = await http.get(url, headers: _headers());
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+    final decodedData = _handleResponse(response);
+    return ApiResponse(data: decodedData, headers: response.headers);
   }
 
   dynamic _handleResponse(http.Response response) {
-    if (response.statusCode == 401) {
+    final path = response.request?.url.path ?? '';
+    final isAuthFlow = path.contains('/auth/login') || path.contains('/auth/register');
+
+    if (response.statusCode == 401 && !isAuthFlow) {
       // Token expired or invalid, trigger logout
       _ref.read(authProvider.notifier).logout();
       throw Exception('Session expired. Please log in again.');
@@ -103,4 +150,11 @@ class ApiService {
       throw Exception(message);
     }
   }
+}
+
+class ApiResponse {
+  final dynamic data;
+  final Map<String, String> headers;
+
+  ApiResponse({required this.data, required this.headers});
 }

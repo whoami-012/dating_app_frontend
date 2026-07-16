@@ -5,8 +5,10 @@ import '../../../core/theme/app_colors.dart';
 import '../models/feed_post.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/home_provider.dart';
 
-class LivePostCard extends StatelessWidget {
+class LivePostCard extends ConsumerWidget {
   final FeedPost? post;
   final bool isLoading;
   final VoidCallback? onDoubleTap;
@@ -19,7 +21,7 @@ class LivePostCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (isLoading || post == null) {
       return const _LivePostCardSkeleton();
     }
@@ -34,24 +36,33 @@ class LivePostCard extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             // Background Media (Video or Image)
-            if (p.isVideo && p.videoUrl != null)
+            if (p.mediaUrl.isEmpty)
+              const _ImagePlaceholder(showDefaultIcon: true)
+            else if (p.isVideo && p.videoUrl != null)
               VideoPostPlayer(
                 videoUrl: p.videoUrl!,
                 thumbnailUrl: p.mediaUrl,
                 mediaAlignmentX: p.mediaAlignmentX,
                 mediaAlignmentY: p.mediaAlignmentY,
+                mediaId: p.mediaId,
               )
             else if (p.mediaUrl.startsWith('http://') ||
                 p.mediaUrl.startsWith('https://'))
               CachedNetworkImage(
                 imageUrl: p.mediaUrl,
+                cacheKey: p.mediaId,
                 fit: BoxFit.cover,
                 alignment: Alignment(
                   p.mediaAlignmentX ?? 0.08,
                   p.mediaAlignmentY ?? -0.05,
                 ),
                 placeholder: (context, url) => const _ImagePlaceholder(),
-                errorWidget: (context, url, error) => const _ImageErrorState(),
+                errorWidget: (context, url, error) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    ref.read(homeProvider.notifier).refreshFeed();
+                  });
+                  return const _ImageErrorState();
+                },
               )
             else
               Image.file(
@@ -72,18 +83,25 @@ class LivePostCard extends StatelessWidget {
 }
 
 class _ImagePlaceholder extends StatelessWidget {
-  const _ImagePlaceholder();
+  final bool showDefaultIcon;
+  const _ImagePlaceholder({this.showDefaultIcon = false});
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-      child: const Center(
-        child: CircularProgressIndicator(
-          color: AppColors.neonLime,
-          strokeWidth: 2,
-        ),
+      child: Center(
+        child: showDefaultIcon
+            ? Icon(
+                Icons.image_outlined,
+                color: isDark ? AppColors.darkMutedText : AppColors.lightMutedText,
+                size: 48,
+              )
+            : const CircularProgressIndicator(
+                color: AppColors.neonLime,
+                strokeWidth: 2,
+              ),
       ),
     );
   }
@@ -174,11 +192,12 @@ class _LivePostCardSkeletonState extends State<_LivePostCardSkeleton>
   }
 }
 
-class VideoPostPlayer extends StatefulWidget {
+class VideoPostPlayer extends ConsumerStatefulWidget {
   final String videoUrl;
   final String thumbnailUrl;
   final double? mediaAlignmentX;
   final double? mediaAlignmentY;
+  final String? mediaId;
 
   const VideoPostPlayer({
     super.key,
@@ -186,13 +205,14 @@ class VideoPostPlayer extends StatefulWidget {
     required this.thumbnailUrl,
     this.mediaAlignmentX,
     this.mediaAlignmentY,
+    this.mediaId,
   });
 
   @override
-  State<VideoPostPlayer> createState() => _VideoPostPlayerState();
+  ConsumerState<VideoPostPlayer> createState() => _VideoPostPlayerState();
 }
 
-class _VideoPostPlayerState extends State<VideoPostPlayer> {
+class _VideoPostPlayerState extends ConsumerState<VideoPostPlayer> {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
   bool _hasError = false;
@@ -314,13 +334,19 @@ class _VideoPostPlayerState extends State<VideoPostPlayer> {
     if (isNetwork) {
       return CachedNetworkImage(
         imageUrl: widget.thumbnailUrl,
+        cacheKey: widget.mediaId,
         fit: BoxFit.cover,
         alignment: Alignment(
           widget.mediaAlignmentX ?? 0.0,
           widget.mediaAlignmentY ?? 0.0,
         ),
         placeholder: (context, url) => const _ImagePlaceholder(),
-        errorWidget: (context, url, error) => const _ImageErrorState(),
+        errorWidget: (context, url, error) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ref.read(homeProvider.notifier).refreshFeed();
+          });
+          return const _ImageErrorState();
+        },
       );
     } else {
       return Image.file(

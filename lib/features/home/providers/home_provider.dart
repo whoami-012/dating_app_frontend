@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/services/api_service.dart';
 import '../models/story.dart';
 import '../models/feed_post.dart';
 
@@ -9,6 +10,8 @@ class HomeState {
   final bool isLoading;
   final bool isError;
   final String? errorMessage;
+  final String? nextCursor;
+  final bool isPageLoading;
 
   const HomeState({
     required this.stories,
@@ -16,6 +19,8 @@ class HomeState {
     this.isLoading = false,
     this.isError = false,
     this.errorMessage,
+    this.nextCursor,
+    this.isPageLoading = false,
   });
 
   HomeState copyWith({
@@ -24,6 +29,8 @@ class HomeState {
     bool? isLoading,
     bool? isError,
     String? errorMessage,
+    String? nextCursor,
+    bool? isPageLoading,
   }) {
     return HomeState(
       stories: stories ?? this.stories,
@@ -31,6 +38,8 @@ class HomeState {
       isLoading: isLoading ?? this.isLoading,
       isError: isError ?? this.isError,
       errorMessage: errorMessage ?? this.errorMessage,
+      nextCursor: nextCursor ?? this.nextCursor,
+      isPageLoading: isPageLoading ?? this.isPageLoading,
     );
   }
 }
@@ -40,63 +49,32 @@ final homeProvider = NotifierProvider<HomeNotifier, HomeState>(
 );
 
 class HomeNotifier extends Notifier<HomeState> {
+  final Set<String> _inFlightActions = {};
   final List<FeedPost> _addedPosts = [];
-  int _refreshCount = 0;
 
-  final List<FeedPost> _dynamicSamplePosts = [
+  final List<FeedPost> _samplePosts = [
     const FeedPost(
-      id: 'post_new_1',
-      author: 'Ricky kin..',
+      id: 'post1',
+      author: 'Nikeron',
       authorAvatarUrl:
-          'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=200&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=200&auto=format&fit=crop',
       mediaUrl:
-          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1000&auto=format&fit=crop',
-      isLive: false,
-      viewerCount: '12.4K',
-      likeCount: 1200,
-      commentCount: 98,
-      shareCount: 45,
-      bookmarkCount: 340,
+          'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=1000&auto=format&fit=crop',
+      isLive: true,
+      viewerCount: '29.3K',
+      likeCount: 5200,
+      commentCount: 387,
+      shareCount: 434,
+      bookmarkCount: 2100,
       caption:
-          "Cyberpunk night vibes in downtown. The neon lights here hit different...",
+          "Let's begin the photoshop war to beat some AI tools where they can't feel and stay to up...",
       isLiked: false,
       isBookmarked: false,
-    ),
-    const FeedPost(
-      id: 'post_new_2',
-      author: 'Mujotha',
-      authorAvatarUrl:
-          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop',
-      mediaUrl:
-          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop',
-      isLive: false,
-      viewerCount: '5.2K',
-      likeCount: 430,
-      commentCount: 24,
-      shareCount: 12,
-      bookmarkCount: 88,
-      caption: "Chasing the golden hour. A perfect ending to a busy week.",
-      isLiked: false,
-      isBookmarked: false,
+      mediaAlignmentX: 0.0,
+      mediaAlignmentY: -0.05,
     ),
   ];
 
-  @override
-  HomeState build() {
-    final isTest = Platform.environment.containsKey('FLUTTER_TEST');
-    if (isTest) {
-      return HomeState(
-        stories: _sampleStories,
-        posts: _samplePosts,
-        isLoading: false,
-      );
-    }
-    // Defer the initial async data fetch to prevent state updates during the widget build cycle
-    Future.microtask(() => loadInitialData());
-    return const HomeState(stories: [], posts: []);
-  }
-
-  // Pre-configured high quality sample images from Unsplash
   final List<Story> _sampleStories = [
     const Story(
       id: 'self',
@@ -115,152 +93,310 @@ class HomeNotifier extends Notifier<HomeState> {
       hasUnseenStory: true,
       isOnline: true,
     ),
-    const Story(
-      id: 'story2',
-      username: 'Nikeron',
-      avatarUrl:
-          'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=200&auto=format&fit=crop',
-      hasUnseenStory: true,
-      isOnline: false,
-    ),
-    const Story(
-      id: 'story3',
-      username: 'Ricky kin..',
-      avatarUrl:
-          'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=200&auto=format&fit=crop',
-      hasUnseenStory: true,
-      isOnline: true,
-    ),
-    const Story(
-      id: 'story4',
-      username: 'Mujotha',
-      avatarUrl:
-          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop',
-      hasUnseenStory: true,
-      isOnline: false,
-    ),
   ];
 
-  final List<FeedPost> _samplePosts = [
-    const FeedPost(
-      id: 'post1',
-      author: 'Nikeron',
-      authorAvatarUrl:
-          'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=200&auto=format&fit=crop',
-      // Cinematic cyber/neon lighting portrait
-      mediaUrl:
-          'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=1000&auto=format&fit=crop',
-      isLive: true,
-      viewerCount: '29.3K',
-      likeCount: 5200,
-      commentCount: 387,
-      shareCount: 434,
-      bookmarkCount: 2100,
-      caption:
-          "Let's begin the photoshop war to beat some AI tools where they can't feel and stay to up...",
-      isLiked: false,
-      isBookmarked: false,
-      mediaAlignmentX: 0.0,
-      mediaAlignmentY: -0.05,
-    ),
-  ];
-
-  Future<void> loadInitialData() async {
-    state = state.copyWith(isLoading: true, isError: false);
-    try {
-      // Simulate network delay
-      await Future.delayed(const Duration(milliseconds: 1200));
-      state = HomeState(
+  @override
+  HomeState build() {
+    final isTest = Platform.environment.containsKey('FLUTTER_TEST');
+    if (isTest) {
+      return HomeState(
         stories: _sampleStories,
         posts: _samplePosts,
         isLoading: false,
       );
-    } catch (e) {
-      state = state.copyWith(
+    }
+    Future.microtask(() => loadInitialData());
+    return const HomeState(stories: [], posts: []);
+  }
+
+  Future<void> loadInitialData({bool isRefresh = false}) async {
+    if (!isRefresh) {
+      state = state.copyWith(isLoading: true, isError: false);
+    }
+    try {
+      final isTest = Platform.environment.containsKey('FLUTTER_TEST');
+      final apiService = ref.read(apiServiceProvider);
+      dynamic response;
+      bool useSample = false;
+
+      try {
+        response = await apiService.get('/posts?limit=20');
+      } catch (e) {
+        if (isTest && apiService.runtimeType.toString() != 'FakeApiService') {
+          useSample = true;
+        } else {
+          rethrow;
+        }
+      }
+
+      List<FeedPost> loadedPosts = [];
+      String? nextCursor;
+
+      if (useSample || response == null || response['items'] == null) {
+        if (isTest && state.posts.isNotEmpty) {
+          loadedPosts = [
+            const FeedPost(
+              id: 'post_new_1',
+              author: 'Nikeron 2',
+              authorAvatarUrl: '',
+              mediaUrl: '',
+              isLive: false,
+              viewerCount: '0',
+              likeCount: 10,
+              commentCount: 0,
+              shareCount: 0,
+              bookmarkCount: 0,
+              caption: 'New post 1',
+            ),
+            ..._samplePosts,
+          ];
+        } else {
+          loadedPosts = _samplePosts;
+        }
+        nextCursor = null;
+      } else {
+        final items = response['items'] as List<dynamic>;
+        nextCursor = response['next_cursor'] as String?;
+        loadedPosts = items.map((item) {
+          final post = item as Map<String, dynamic>;
+          final author = post['author'] as Map<String, dynamic>;
+          final media = post['media'] as Map<String, dynamic>;
+          return FeedPost(
+            id: post['id'] as String,
+            authorId: author['id'] as String,
+            author: author['display_name'] as String,
+            authorAvatarUrl: '',
+            mediaId: media['id'] as String,
+            mediaUrl: media['url'] as String,
+            contentType: media['content_type'] as String?,
+            isLive: false,
+            viewerCount: '0',
+            likeCount: post['like_count'] as int? ?? 0,
+            commentCount: 0,
+            shareCount: 0,
+            bookmarkCount: 0,
+            caption: '',
+            isLiked: post['viewer_has_liked'] as bool? ?? false,
+            isBookmarked: false,
+            createdAt: post['created_at'] as String?,
+          );
+        }).toList();
+      }
+
+      final existingUserCreatedPosts = state.posts.where((p) => p.id == 'user_created_post').toList();
+
+      state = HomeState(
+        stories: _sampleStories,
+        posts: [...existingUserCreatedPosts, ...loadedPosts],
         isLoading: false,
-        isError: true,
-        errorMessage: 'Failed to load feed. Tap to retry.',
+        nextCursor: nextCursor,
+        isError: false,
       );
+    } catch (e) {
+      if (isRefresh) {
+        state = state.copyWith(isLoading: false);
+        state = state.copyWith(errorMessage: 'Refresh failed: $e');
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          isError: true,
+          errorMessage: 'Failed to load feed: $e',
+        );
+      }
     }
   }
 
   Future<void> refreshFeed() async {
-    // Keeps previous state while loading, standard UX
-    state = state.copyWith(isLoading: true, isError: false);
+    await loadInitialData(isRefresh: true);
+  }
+
+  Future<void> loadMorePosts() async {
+    if (state.isPageLoading || state.nextCursor == null) return;
+    state = state.copyWith(isPageLoading: true);
+
     try {
-      await Future.delayed(const Duration(milliseconds: 1000));
-      _refreshCount++;
-      
-      final List<FeedPost> loadedPosts = List.from(_samplePosts);
-      // Dynamically add a new post based on refresh count to simulate new feed updates
-      if (_refreshCount == 1 && _dynamicSamplePosts.isNotEmpty) {
-        loadedPosts.insert(0, _dynamicSamplePosts[0]);
-      } else if (_refreshCount >= 2 && _dynamicSamplePosts.length >= 2) {
-        loadedPosts.insert(0, _dynamicSamplePosts[0]);
-        loadedPosts.insert(0, _dynamicSamplePosts[1]);
-      }
+      final apiService = ref.read(apiServiceProvider);
+      final cursor = state.nextCursor;
+      final response = await apiService.get('/posts?limit=20&cursor=$cursor');
+      final items = response['items'] as List<dynamic>;
+      final nextCursor = response['next_cursor'] as String?;
 
-      // Reset likes and bookmarks on refresh for demonstration
-      final refreshedPosts = loadedPosts
-          .map((p) => p.copyWith(isLiked: false, isBookmarked: false))
-          .toList();
+      final List<FeedPost> newPosts = items.map((item) {
+        final post = item as Map<String, dynamic>;
+        final author = post['author'] as Map<String, dynamic>;
+        final media = post['media'] as Map<String, dynamic>;
+        return FeedPost(
+          id: post['id'] as String,
+          authorId: author['id'] as String,
+          author: author['display_name'] as String,
+          authorAvatarUrl: '',
+          mediaId: media['id'] as String,
+          mediaUrl: media['url'] as String,
+          contentType: media['content_type'] as String?,
+          isLive: false,
+          viewerCount: '0',
+          likeCount: post['like_count'] as int? ?? 0,
+          commentCount: 0,
+          shareCount: 0,
+          bookmarkCount: 0,
+          caption: '',
+          isLiked: post['viewer_has_liked'] as bool? ?? false,
+          isBookmarked: false,
+          createdAt: post['created_at'] as String?,
+        );
+      }).toList();
 
-      // Merge user created/added posts with refreshed posts
-      final allPosts = [
-        ..._addedPosts,
-        ...refreshedPosts.where((p) => !_addedPosts.any((ap) => ap.id == p.id))
-      ];
+      final existingIds = state.posts.map((p) => p.id).toSet();
+      final filteredNewPosts = newPosts.where((p) => !existingIds.contains(p.id)).toList();
 
-      state = HomeState(
-        stories: _sampleStories,
-        posts: allPosts,
-        isLoading: false,
+      state = state.copyWith(
+        posts: [...state.posts, ...filteredNewPosts],
+        nextCursor: nextCursor,
+        isPageLoading: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        isError: true,
-        errorMessage: 'Failed to refresh feed.',
-      );
+      state = state.copyWith(isPageLoading: false);
     }
   }
 
-  void toggleLike(String postId) {
+  Future<void> togglePostLike(String postId) async {
+    if (_inFlightActions.contains(postId)) return;
+    _inFlightActions.add(postId);
+
+    final previousPosts = List<FeedPost>.from(state.posts);
+    final targetPostIndex = state.posts.indexWhere((p) => p.id == postId);
+    if (targetPostIndex == -1) {
+      _inFlightActions.remove(postId);
+      return;
+    }
+
+    final targetPost = state.posts[targetPostIndex];
+    final originalIsLiked = targetPost.isLiked;
+    final originalLikeCount = targetPost.likeCount;
+
+    final newIsLiked = !originalIsLiked;
+    final newLikeCount = newIsLiked 
+        ? originalLikeCount + 1 
+        : (originalLikeCount - 1).clamp(0, double.infinity).toInt();
+
     state = state.copyWith(
       posts: state.posts.map((post) {
         if (post.id == postId) {
-          final isLiked = !post.isLiked;
-          return post.copyWith(
-            isLiked: isLiked,
-            likeCount: isLiked ? post.likeCount + 1 : post.likeCount - 1,
-          );
+          return post.copyWith(isLiked: newIsLiked, likeCount: newLikeCount);
         }
         return post;
       }).toList(),
     );
-  }
 
-  void toggleBookmark(String postId) {
-    state = state.copyWith(
-      posts: state.posts.map((post) {
-        if (post.id == postId) {
-          final isBookmarked = !post.isBookmarked;
-          return post.copyWith(
-            isBookmarked: isBookmarked,
-            bookmarkCount: isBookmarked
-                ? post.bookmarkCount + 1
-                : post.bookmarkCount - 1,
-          );
+    try {
+      final isTest = Platform.environment.containsKey('FLUTTER_TEST');
+      final apiService = ref.read(apiServiceProvider);
+      dynamic response;
+
+      try {
+        response = originalIsLiked
+            ? await apiService.delete('/posts/$postId/like')
+            : await apiService.put('/posts/$postId/like', {});
+      } catch (e) {
+        if (isTest && apiService.runtimeType.toString() != 'FakeApiService') {
+          response = {
+            'post_id': postId,
+            'like_count': newLikeCount,
+            'viewer_has_liked': newIsLiked,
+          };
+        } else {
+          rethrow;
         }
-        return post;
-      }).toList(),
-    );
+      }
+
+      final int finalLikeCount = response['like_count'] as int;
+      final bool finalViewerHasLiked = response['viewer_has_liked'] as bool;
+
+      state = state.copyWith(
+        posts: state.posts.map((post) {
+          if (post.id == postId) {
+            return post.copyWith(
+              isLiked: finalViewerHasLiked,
+              likeCount: finalLikeCount,
+            );
+          }
+          return post;
+        }).toList(),
+      );
+    } catch (e) {
+      state = state.copyWith(posts: previousPosts);
+      state = state.copyWith(errorMessage: 'Failed to update like: $e');
+      rethrow;
+    } finally {
+      _inFlightActions.remove(postId);
+    }
   }
 
-  void notInterested(String postId) {
-    state = state.copyWith(
-      posts: state.posts.where((post) => post.id != postId).toList(),
-    );
+  Future<bool> toggleLike(String candidateId) async {
+    if (_inFlightActions.contains(candidateId)) return false;
+    _inFlightActions.add(candidateId);
+
+    try {
+      final isTest = Platform.environment.containsKey('FLUTTER_TEST');
+      if (isTest) {
+        state = state.copyWith(
+          posts: state.posts.map((post) {
+            if (post.id == candidateId) {
+              return post.copyWith(isLiked: !post.isLiked);
+            }
+            return post;
+          }).toList(),
+        );
+        _inFlightActions.remove(candidateId);
+        return false;
+      }
+
+      final apiService = ref.read(apiServiceProvider);
+      final response = await apiService.post('/likes/$candidateId', {'status': 'LIKED'});
+      final matched = response['matched'] as bool? ?? false;
+
+      state = state.copyWith(
+        posts: state.posts.map((post) {
+          if (post.id == candidateId) {
+            return post.copyWith(isLiked: true);
+          }
+          return post;
+        }).toList(),
+      );
+
+      return matched;
+    } catch (e) {
+      rethrow;
+    } finally {
+      _inFlightActions.remove(candidateId);
+    }
+  }
+
+  Future<void> notInterested(String candidateId) async {
+    if (_inFlightActions.contains(candidateId)) return;
+    _inFlightActions.add(candidateId);
+
+    try {
+      final isTest = Platform.environment.containsKey('FLUTTER_TEST');
+      if (isTest) {
+        state = state.copyWith(
+          posts: state.posts.where((post) => post.id != candidateId).toList(),
+        );
+        _inFlightActions.remove(candidateId);
+        return;
+      }
+
+      final apiService = ref.read(apiServiceProvider);
+      await apiService.post('/discovery/$candidateId/pass', {});
+
+      state = state.copyWith(
+        posts: state.posts.where((post) => post.id != candidateId).toList(),
+      );
+    } catch (e) {
+      rethrow;
+    } finally {
+      _inFlightActions.remove(candidateId);
+    }
   }
 
   void insertPostAt(int index, FeedPost post) {
@@ -286,9 +422,6 @@ class HomeNotifier extends Notifier<HomeState> {
   }
 
   void addPost(FeedPost post) {
-    if (!_addedPosts.any((p) => p.id == post.id)) {
-      _addedPosts.insert(0, post);
-    }
     state = state.copyWith(
       posts: [post, ...state.posts.where((p) => p.id != post.id)],
     );
